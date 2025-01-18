@@ -8,10 +8,14 @@ import java.util.Collection;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
+
 public class ChessGame {
 
-    public ChessGame() {
+    private ChessBoard board; //reference variable to type ChessBoard (kind of like pointer)
 
+    public ChessGame() {
+        board = new ChessBoard(); //creates instance (object); actual board is now real
+        board.resetBoard();
     }
 
     /**
@@ -107,4 +111,18 @@ public class ChessGame {
     public ChessBoard getBoard() {
         throw new RuntimeException("Not implemented");
     }
+
+
+    public static void main(String[] args) {
+        // Initialize the game
+        ChessGame game = new ChessGame();
+
+        // Starting message for user
+        System.out.print("Chess Game Loading...\n");
+
+        // Display the initial board setup
+        game.board.drawBoard();
+    }
+
+
 }
