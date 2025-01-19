@@ -20,9 +20,9 @@ import java.sql.SQLOutput;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private ChessPiece[][] squares = new ChessPiece[8][8];
+    private ChessPiece[][] squares = new ChessPiece[8][8]; //creates squares object
+
     public ChessBoard() {
-        resetBoard();
     }
 
     /**
@@ -101,8 +101,7 @@ public class ChessBoard {
     }
 
     /**
-     * (i created this)
-     * should draw the squares grid
+     * draws the current chess board
      */
     public void drawBoard(){
         for (int row = 0; row<squares.length; row++){ //go through each row

@@ -11,11 +11,23 @@ import java.util.Collection;
 
 public class ChessGame {
 
-    private ChessBoard board; //reference variable to type ChessBoard (kind of like pointer)
+    private ChessBoard board; //reference to chessBoard (pointer)
 
     public ChessGame() {
-        board = new ChessBoard(); //creates instance (object); actual board is now real
-        board.resetBoard();
+        board = new ChessBoard(); //creates board object in memory
+        board.resetBoard(); //initialize game board
+        //set turn to white turn //start with white turn
+    }
+
+    public boolean playerTurn(ChessPosition start, ChessPosition end, ChessPiece.PieceType promotionPiece){
+        //if not valid move
+            //return false
+        //else
+            //perform movement of piece
+
+        //switch turns
+
+        return false;
     }
 
     /**
@@ -26,11 +38,13 @@ public class ChessGame {
     }
 
     /**
-     * Set's which teams turn it is
+     * Sets which team's turn it is
      *
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
+        //if black's turn:
+            //change to white. and vice versa
         throw new RuntimeException("Not implemented");
     }
 
@@ -100,6 +114,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
+        //account for the turn and then update board?
         throw new RuntimeException("Not implemented");
     }
 
@@ -109,19 +124,19 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
 
 
     public static void main(String[] args) {
         // Initialize the game
-        ChessGame game = new ChessGame();
+        ChessGame game = new ChessGame();  // Creates and initializes a new chess game
+        System.out.println("Game is initializing...");// Starting message for user
+        game.board.drawBoard(); // Display the initial board setup
 
-        // Starting message for user
-        System.out.print("Chess Game Loading...\n");
+        //player turns?
 
-        // Display the initial board setup
-        game.board.drawBoard();
+
     }
 
 

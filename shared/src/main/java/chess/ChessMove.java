@@ -7,9 +7,18 @@ package chess;
  * signature of the existing methods.
  */
 public class ChessMove {
+    //private things here
+    private ChessPosition startPosition;
+    private ChessPosition endPosition;
+    private ChessPiece.PieceType promotionPiece;
+
+
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.promotionPiece = promotionPiece;
     }
 
     /**
@@ -17,14 +26,14 @@ public class ChessMove {
      */
     public ChessPosition getStartPosition() {
         ChessPosition initalPosition = new ChessPosition(1,1);
-        return initalPosition;
+        return startPosition;
     }
 
     /**
      * @return ChessPosition of ending location
      */
     public ChessPosition getEndPosition() {
-        ChessPosition endPosition = new ChessPosition(1,1);
+        //ChessPosition endPosition = new ChessPosition(1,1);
         return endPosition;
     }
 
@@ -35,6 +44,6 @@ public class ChessMove {
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public ChessPiece.PieceType getPromotionPiece() {
-        return null;
+        return promotionPiece;
     }
 }

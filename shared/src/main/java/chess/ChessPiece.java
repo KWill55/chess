@@ -11,12 +11,12 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessPiece {
-    private PieceType type; //i added this
-    private ChessGame.TeamColor pieceColor; //I added this
+    private PieceType type; //creates reference variable for pieceType enum (blueprint)
+    private ChessGame.TeamColor pieceColor; //creates reference variable for TeamColor enum (blueprint)
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-        this.pieceColor = pieceColor;
-        this.type = type;
+        this.pieceColor = pieceColor; //assign parameter pieceColor to value of reference variable pieceColor
+        this.type = type; //assign parameter type to value of reference variable type
     }
 
     /**
