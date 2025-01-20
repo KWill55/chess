@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.Scanner;
+
 /**
  * Represents moving a chess piece on a chessboard
  * <p>
@@ -7,10 +9,10 @@ package chess;
  * signature of the existing methods.
  */
 public class ChessMove {
-    //private things here
     private ChessPosition startPosition;
     private ChessPosition endPosition;
     private ChessPiece.PieceType promotionPiece;
+    private static Scanner scanner = new Scanner(System.in); //scanner for user input
 
 
 
@@ -25,7 +27,6 @@ public class ChessMove {
      * @return ChessPosition of starting location
      */
     public ChessPosition getStartPosition() {
-        ChessPosition initalPosition = new ChessPosition(1,1);
         return startPosition;
     }
 
@@ -33,7 +34,13 @@ public class ChessMove {
      * @return ChessPosition of ending location
      */
     public ChessPosition getEndPosition() {
-        //ChessPosition endPosition = new ChessPosition(1,1);
+        //get piece destination from user
+//        System.out.println("Where would you like to move your piece?");
+//        String endInput = scanner.nextLine();
+//        char end_row = endInput.charAt(0);
+//        char end_col = endInput.charAt(1);
+//
+//        ChessPosition endPosition = new ChessPosition(end_row, end_col);
         return endPosition;
     }
 
