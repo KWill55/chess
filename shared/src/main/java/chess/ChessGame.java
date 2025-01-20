@@ -11,7 +11,7 @@ import java.util.Scanner;
  */
 
 public class ChessGame {
-
+    private TeamColor currentTurn = TeamColor.WHITE;
     private ChessBoard board; //reference to chessBoard (pointer)
 
     public ChessGame() {
@@ -32,9 +32,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        //if black's turn:
-            //change to white. and vice versa
-        throw new RuntimeException("Not implemented");
+        this.currentTurn = team;
     }
 
     /**
@@ -135,30 +133,59 @@ public class ChessGame {
 
     public static void main(String[] args) throws InvalidMoveException {
         // Initialize the game
+        boolean gameIsOver = false;
         ChessGame game = new ChessGame();  // Creates and initializes a new ChessGame object; ChessGame constructor is called
         System.out.println("Game is initializing...");// Starting message for user
         game.board.drawBoard(); // Display the initial board setup
 
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Enter the starting position (row column):");
-        int startRow = scanner.nextInt();
-        int startCol = scanner.nextInt();
-        //TODO: use below to change these to chess labels
-//        String startInput = scanner.nextLine();
-//        char start_row = startInput.charAt(0); //A-G
-//        char start_col = startInput.charAt(1); //1-8
+        //player turns
+        while (gameIsOver == false){
+            System.out.println("Current turn: " + game.currentTurn);
 
-        System.out.println("Enter the ending position (row column):");
-        int endRow = scanner.nextInt();
-        int endCol = scanner.nextInt();
+            //Get info for piece that the user wants to move
+            System.out.println("Which piece would you like to move?");
 
-        ChessPosition start = new ChessPosition(startRow, startCol);
-        ChessPosition end = new ChessPosition(endRow, endCol);
-        ChessMove move = new ChessMove(start, end, null);
+            //get column of starting piece (user enters A-G)
+            System.out.println("Select column: (A-H)");
+            char startColChar = scanner.next().toUpperCase().charAt(0);
+            int startCol = startColChar - 'A'; //converts A-G to 0-7
 
-        //just make sure pieces can actually move
-        game.makeMove(move);
+            //Get row of starting piece (user enters 1-8)
+            System.out.println("Select row: (1-8)");
+            int startRowInput = scanner.nextInt();
+            int startRow = 8 - startRowInput;
+
+            //Get info for where the user wants to move
+            System.out.println("Where would you like to move?");
+
+            //get column of ending piece (user enters A-G)
+            System.out.println("Select column: (A-H)");
+            char endColChar = scanner.next().toUpperCase().charAt(0);
+            int endCol = endColChar - 'A'; //converts A-G to 0-7
+
+            //Get row of ending piece (user enters 1-8)
+            System.out.println("Select row: (1-8)");
+            int endRowInput = scanner.nextInt();
+            int endRow = 8 - endRowInput;
+
+            //store chess positions to prepare to make the move
+            ChessPosition start = new ChessPosition(startRow, startCol);
+            ChessPosition end = new ChessPosition(endRow, endCol);
+            ChessMove move = new ChessMove(start, end, null);
+
+            game.makeMove(move);
+
+            if (game.currentTurn == TeamColor.WHITE){
+                game.setTeamTurn(TeamColor.BLACK);
+            }
+            else{
+                game.setTeamTurn(TeamColor.WHITE);
+            }
+        }
+
+
 
 
         //TODO: loop to contain player turns
