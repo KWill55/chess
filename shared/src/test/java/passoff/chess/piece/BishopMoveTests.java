@@ -9,14 +9,15 @@ public class BishopMoveTests {
     @Test
     public void bishopMoveUntilEdge() {
         TestUtilities.validateMoves("""
-                        | | | | | | | | |
-                        | | | | | | | | |
-                        | | | | | | | | |
-                        | | | |B| | | | |
-                        | | | | | | | | |
-                        | | | | | | | | |
-                        | | | | | | | | |
-                        | | | | | | | | |
+                        8| | | | | | | | |
+                        7| | | | | | | | |
+                        6| | | | | | | | |
+                        5| | | |B| | | | |
+                        4| | | | | | | | |
+                        3| | | | | | | | |
+                        2| | | | | | | | |
+                        1| | | | | | | | |
+                          1 2 3 4 5 6 7 8
                         """,
                 new ChessPosition(5, 4),
                 new int[][]{
@@ -48,6 +49,8 @@ public class BishopMoveTests {
                         // none
                         {6, 1},
                 }
+
+
         );
     }
 

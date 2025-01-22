@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -23,7 +24,7 @@ public class ChessGame {
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return currentTurn;
     }
 
     /**
@@ -51,7 +52,33 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPosition internalStartPosition = ChessBoard.fromChessFormat(startPosition);
+        ChessPiece piece = board.getPiece(internalStartPosition);
+        PieceMovesCalculator calculator;
+
+        if (piece == null){
+            throw new RuntimeException("No piece at the specified position.");
+        }
+
+        switch (piece.getPieceType()) {
+            case BISHOP:
+                calculator = new BishopMovesCalculator();
+                break;
+            default:
+                throw new RuntimeException("No moves calculator for piece type: " + piece.getPieceType());
+        }
+
+        // Get valid positions for this piece
+        Collection<ChessPosition> validPositions = calculator.calculateMoves(board, internalStartPosition);
+
+        // Convert positions into ChessMove objects
+        Collection<ChessMove> validMoves = new ArrayList<>();
+        for (ChessPosition endPosition : validPositions) {
+            validMoves.add(new ChessMove(startPosition, endPosition, null));
+        }
+
+        return validMoves;
+
     }
 
     /**
@@ -64,10 +91,32 @@ public class ChessGame {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
 
-        ChessPiece piece = board.getPiece(start); //get piece type
+        ChessPosition internalStart = ChessBoard.fromChessFormat(start);
+        ChessPosition internalEnd = ChessBoard.fromChessFormat(end);
 
-        board.addPiece(end,piece); //adds move to the board
-        board.addPiece(start,null); //removes piece from old position
+        ChessPiece piece = board.getPiece(internalStart); //get piece type
+
+        if (piece == null) {
+            throw new InvalidMoveException("No piece at the starting position!");
+        }
+
+        // Get the valid moves for the piece
+        Collection<ChessMove> validMoves = validMoves(start);
+
+        // Check if the desired move is valid
+        boolean isValid = false;
+        for (ChessMove validMove :validMoves){
+            if (validMove.getEndPosition().equals(end)){
+                isValid = true;
+                break;
+            }
+        }
+        if (!isValid) {
+            throw new InvalidMoveException("Invalid move for the piece at " + start);
+        }
+
+        board.addPiece(internalEnd,piece); //adds move to the board
+        board.addPiece(internalStart,null); //removes piece from old position
         board.drawBoard(); //update board for the user
     }
 
@@ -78,7 +127,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return false; //TODO
     }
 
     /**
@@ -88,7 +137,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return false; //TODO
     }
 
     /**
@@ -99,7 +148,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return false; //TODO
     }
 
     /**
@@ -108,8 +157,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        //account for the turn and then update board?
-        throw new RuntimeException("Not implemented");
+        board.drawBoard();
     }
 
     /**
@@ -121,22 +169,12 @@ public class ChessGame {
         return board;
     }
 
-    /**
-    * TODO fix this later
-     */
-    public static int rowToArrayForm (char letter){
-        letter = Character.toUpperCase(letter); //make sure row is upper case
-        //TODO convert board labels to array labels. for now user will enter matrix labels to make it easier
-        return 6;
-    }
-
-
     public static void main(String[] args) throws InvalidMoveException {
         // Initialize the game
         boolean gameIsOver = false;
         ChessGame game = new ChessGame();  // Creates and initializes a new ChessGame object; ChessGame constructor is called
         System.out.println("Game is initializing...");// Starting message for user
-        game.board.drawBoard(); // Display the initial board setup
+        game.getBoard().drawBoard(); // Display the initial board setup
 
         Scanner scanner = new Scanner(System.in);
 
@@ -144,37 +182,22 @@ public class ChessGame {
         while (gameIsOver == false){
             System.out.println("Current turn: " + game.currentTurn);
 
-            //Get info for piece that the user wants to move
-            System.out.println("Which piece would you like to move?");
+            // Get the starting position from the user
+            System.out.println("Which piece would you like to move? (row and column format, e.g., 5 4):");
+            int startRow = scanner.nextInt(); // Input row (e.g., 5)
+            int startCol = scanner.nextInt(); // Input column (e.g., 4)
+            ChessPosition chessStart = new ChessPosition(startRow, startCol); //stored in Chess format
+            ChessPosition internalStart = ChessBoard.fromChessFormat(chessStart);//convert to array format
 
-            //get column of starting piece (user enters A-G)
-            System.out.println("Select column: (A-H)");
-            char startColChar = scanner.next().toUpperCase().charAt(0);
-            int startCol = startColChar - 'A'; //converts A-G to 0-7
+            // Get the ending position from the user
+            System.out.println("Where do you want to move? (row and column format, e.g., 6 5):");
+            int endRow = scanner.nextInt(); // Input row (e.g., 6)
+            int endCol = scanner.nextInt(); // Input column (e.g., 5)
+            ChessPosition chessEnd = new ChessPosition(endRow, endCol); //stored in Chess format
+            ChessPosition internalEnd = ChessBoard.fromChessFormat(chessEnd);//convert to array format
 
-            //Get row of starting piece (user enters 1-8)
-            System.out.println("Select row: (1-8)");
-            int startRowInput = scanner.nextInt();
-            int startRow = 8 - startRowInput;
-
-            //Get info for where the user wants to move
-            System.out.println("Where would you like to move?");
-
-            //get column of ending piece (user enters A-G)
-            System.out.println("Select column: (A-H)");
-            char endColChar = scanner.next().toUpperCase().charAt(0);
-            int endCol = endColChar - 'A'; //converts A-G to 0-7
-
-            //Get row of ending piece (user enters 1-8)
-            System.out.println("Select row: (1-8)");
-            int endRowInput = scanner.nextInt();
-            int endRow = 8 - endRowInput;
-
-            //store chess positions to prepare to make the move
-            ChessPosition start = new ChessPosition(startRow, startCol);
-            ChessPosition end = new ChessPosition(endRow, endCol);
-            ChessMove move = new ChessMove(start, end, null);
-
+            // Store chess positions to prepare to make the move
+            ChessMove move = new ChessMove(chessStart, chessEnd, null);
             game.makeMove(move);
 
             if (game.currentTurn == TeamColor.WHITE){
@@ -183,29 +206,16 @@ public class ChessGame {
             else{
                 game.setTeamTurn(TeamColor.WHITE);
             }
-        }
 
 
-
-
-        //TODO: loop to contain player turns
-//        while (game_is_over == false){
-//            System.out.println("Current turn: " + currentColor);
-//            game.makeMove(TODO);
-//
-//            //switch turn
-//            if (currentColor == BLACK){
-//                setTeamTurn(WHITE);
-//            }
-//            else {
-//                setTeamTurn(BLACK)
-//            }
-//        }
-        //setTeamTurn(WHITE);
-        //ChessMove(
-
-        //setTeamTurn(BLACK);
-
-
-    }
-}
+            // Check game-over conditions
+            if (game.isInCheckmate(game.currentTurn)) {
+                System.out.println("Checkmate! " + game.currentTurn + " loses.");
+                gameIsOver = true;
+            } else if (game.isInStalemate(game.currentTurn)) {
+                System.out.println("Stalemate! The game is a draw.");
+                gameIsOver = true;
+            }
+        } //end player turn section
+    } // end my main section
+} // end chessGame class

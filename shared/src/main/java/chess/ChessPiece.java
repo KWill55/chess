@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Responsibility: represent data of a chess piece (color, type)
@@ -53,6 +54,37 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return new ArrayList<>();
+        PieceMovesCalculator calculator;
+
+        switch (type) {
+//            case ROOK:
+//                calculator = new RookMovesCalculator();
+//                break;
+            case BISHOP:
+                calculator = new BishopMovesCalculator();
+                break;
+//            case KNIGHT:
+//                calculator = new KnightMovesCalculator();
+//                break;
+//            case PAWN:
+//                calculator = new PawnMovesCalculator();
+//                break;
+//            case QUEEN:
+//                calculator = new QueenMovesCalculator();
+//                break;
+//            case KING:
+//                calculator = new KingMovesCalculator();
+//                break;
+            default:
+                throw new IllegalArgumentException("Unknown piece type");
+        }
+
+        // Calculate moves using the specific calculator
+        Collection<ChessPosition> validPositions = calculator.calculateMoves(board, myPosition);
+
+        return validPositions.stream()
+                .map(pos -> new ChessMove(myPosition, pos, null))
+                .collect(Collectors.toList());
+
     }
 }

@@ -1,6 +1,6 @@
 package chess;
 
-import java.util.Scanner;
+import java.util.Objects;
 
 /**
  * Represents moving a chess piece on a chessboard
@@ -12,8 +12,6 @@ public class ChessMove {
     private ChessPosition startPosition;
     private ChessPosition endPosition;
     private ChessPiece.PieceType promotionPiece;
-    private static Scanner scanner = new Scanner(System.in); //scanner for user input
-
 
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
@@ -34,13 +32,6 @@ public class ChessMove {
      * @return ChessPosition of ending location
      */
     public ChessPosition getEndPosition() {
-        //get piece destination from user
-//        System.out.println("Where would you like to move your piece?");
-//        String endInput = scanner.nextLine();
-//        char end_row = endInput.charAt(0);
-//        char end_col = endInput.charAt(1);
-//
-//        ChessPosition endPosition = new ChessPosition(end_row, end_col);
         return endPosition;
     }
 
@@ -52,5 +43,30 @@ public class ChessMove {
      */
     public ChessPiece.PieceType getPromotionPiece() {
         return promotionPiece;
+    }
+
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessMove chessMove = (ChessMove) o;
+        return Objects.equals(startPosition, chessMove.startPosition) && Objects.equals(endPosition, chessMove.endPosition) && promotionPiece == chessMove.promotionPiece;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(startPosition, endPosition, promotionPiece);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessMove{" +
+                "startPosition=" + startPosition +
+                ", endPosition=" + endPosition +
+                ", promotionPiece=" + promotionPiece +
+                '}';
     }
 }

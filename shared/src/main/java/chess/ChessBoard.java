@@ -25,6 +25,46 @@ public class ChessBoard {
     public ChessBoard() {
     }
 
+
+    /**
+     * converts ChessPosition from internal array to chess (Chess) format
+     */
+    public static ChessPosition toChessFormat(ChessPosition position) {
+        int ChessRow = 8 - position.getRow() ;  // Converts top-down 0-based row to bottom-up 1-based row
+        int ChessCol = position.getColumn() + 1; // Converts 0-based column to 1-based column
+        return new ChessPosition(ChessRow, ChessCol);
+    }
+
+
+    /**
+     * converts position from Chess format to array format
+     */
+    public static ChessPosition fromChessFormat(ChessPosition ChessPosition) {
+        int row = 8 - ChessPosition.getRow(); // Chess row 1 → Internal row 7
+        int col = ChessPosition.getColumn() - 1; // Chess col 1 → Internal col 0
+
+        return new ChessPosition(row, col);
+    }
+
+
+    /**
+     * tells whether a row and col in Chess format are within the 8x8 grid
+     */
+    public boolean isWithinBounds(int row, int col) {
+        //in Chess format
+        if (row < 1 || row > 8 || col < 1 || col > 8) {
+            return false;
+        }
+        return true;
+
+
+        //in internal format?
+//        ChessPosition chessPosition = new ChessPosition(row,col);
+//        ChessPosition internalChessPosition = ChessBoard.fromChessFormat(chessPosition);
+//        return internalChessPosition.getRow >= 0 && row <= 8 && col >= 0 && col <= 8;
+        }
+
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -32,8 +72,10 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        squares[position.getRow()][position.getColumn()] = piece;
+        ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
+        squares[internalPosition.getRow()][internalPosition.getColumn()] = piece;
     }
+
 
     /**
      * Gets a chess piece on the chessboard
@@ -43,8 +85,10 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return squares[position.getRow()][position.getColumn()];
+        ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
+        return squares[internalPosition.getRow()][internalPosition.getColumn()];
     }
+
 
     /**
      * Sets the board to the default starting board
@@ -69,10 +113,11 @@ public class ChessBoard {
         // Top right corner rook
         squares[0][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
 
+        squares[1][1] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
         // Place Black pawns
-        for (int col = 0; col <= 7; col++){
-            squares[1][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
-        }
+//        for (int col = 0; col <= 7; col++){
+//            squares[1][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+//        }
 
         // Set up White pieces (bottom of the board)
         // Bottom left corner rook
@@ -93,38 +138,53 @@ public class ChessBoard {
         squares[7][7] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
 
         //place white pawns
-        for (int col = 0; col <= 7; col++){
-            squares[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-        }
+//        for (int col = 0; col <= 7; col++){
+//            squares[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+//        }
 
         // Leave other squares null to represent empty spaces
     }
 
+
     /**
      * draws the current chess board
      */
-    public void drawBoard(){
-        for (int row = 0; row<squares.length; row++){ //go through each row
-            for (int col = 0; col < squares.length; col ++){ //go through each col
-                //print a space if no piece at that spot on board
-                if (squares[row][col] == null){
+    public void drawBoard() {
+        // Iterate from top to bottom of the chessboard (internal array)
+        for (int row = 0; row < squares.length; row++) {
+            // Convert internal row to chess notation (1-based, bottom row = 1)
+            System.out.print((squares.length - row) + " "); // Flip internal row to Chess row
+
+            for (int col = 0; col < squares[row].length; col++) {
+                // Check if the square is empty
+                if (squares[row][col] == null) {
                     System.out.print("_ ");
-                }
-                //print first letter of the piece present at that coordinate
-                else {
-                    //abbreviate knights to N since K is reserved for King
-                    if (squares[row][col].getPieceType() == ChessPiece.PieceType.KNIGHT){
-                        System.out.print("N ");
+                } else {
+                    // Get the piece and determine its display
+                    ChessPiece piece = squares[row][col];
+                    char pieceChar = piece.getPieceType().name().charAt(0);
+
+                    // Abbreviate Knight to 'N'
+                    if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {
+                        pieceChar = 'N';
                     }
-                    //print the first letter of all the pieces (besides the knight)
-                    else{
-                        System.out.print(squares[row][col].getPieceType().name().charAt(0) + " ");
+
+                    // Use uppercase for white pieces, lowercase for black pieces
+                    if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                        System.out.print(Character.toUpperCase(pieceChar) + " ");
+                    } else {
+                        System.out.print(Character.toLowerCase(pieceChar) + " ");
                     }
                 }
             }
-            System.out.println(); //go to next row
+            System.out.println(); // Move to the next line after each row
         }
 
-
+        // Print column headers
+        System.out.println("  1 2 3 4 5 6 7 8");
     }
+
+
+
+
 }

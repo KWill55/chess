@@ -1,4 +1,5 @@
 package chess;
+
 import java.util.Collection;
 
 /**
@@ -10,11 +11,6 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 
-public class PieceMovesCalculator {
-
-
-    //a method that returns whether or not a move is valid for a king piece
-    public boolean KingMovesCalculator(){
-        return true;
-    }
+public interface PieceMovesCalculator {
+    Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition internalStartPosition);
 }
