@@ -29,21 +29,26 @@ public class ChessBoard {
     /**
      * converts ChessPosition from internal array to chess (Chess) format
      */
-    public static ChessPosition toChessFormat(ChessPosition position) {
-        int ChessRow = 8 - position.getRow() ;  // Converts top-down 0-based row to bottom-up 1-based row
-        int ChessCol = position.getColumn() + 1; // Converts 0-based column to 1-based column
-        return new ChessPosition(ChessRow, ChessCol);
+    public static ChessPosition toChessFormat(ChessPosition internalPosition) {
+        int chessRow = 8 - internalPosition.getRow() ;  // Converts top-down 0-based row to bottom-up 1-based row
+        int chessCol = internalPosition.getColumn() + 1; // Converts 0-based column to 1-based column
+
+        // Debug: Print the conversion
+        System.out.println("Converting from internal format: " + internalPosition + " to chesss format: (" + chessRow + ", " + chessCol + ")");
+//        Thread.dumpStack();
+        return new ChessPosition(chessRow, chessCol);
     }
 
 
     /**
-     * converts position from Chess format to array format
+     * converts position from Chess format to internal array format
      */
-    public static ChessPosition fromChessFormat(ChessPosition ChessPosition) {
-        int row = 8 - ChessPosition.getRow(); // Chess row 1 → Internal row 7
-        int col = ChessPosition.getColumn() - 1; // Chess col 1 → Internal col 0
+    public static ChessPosition fromChessFormat(ChessPosition chessPosition) {
+        int internalRow = 8 - chessPosition.getRow(); // Chess row 1 → Internal row 7
+        int internalCol = chessPosition.getColumn() - 1; // Chess col 1 → Internal col 0
 
-        return new ChessPosition(row, col);
+        System.out.println("Converting from Chess format: " + chessPosition + " to internal format: (" + internalRow + ", " + internalCol + ")");
+        return new ChessPosition(internalRow, internalCol);
     }
 
 
@@ -86,6 +91,8 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
+        System.out.println("Accessing chess position: " + position + " array position" + internalPosition);
+
         return squares[internalPosition.getRow()][internalPosition.getColumn()];
     }
 
@@ -113,7 +120,6 @@ public class ChessBoard {
         // Top right corner rook
         squares[0][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
 
-        squares[1][1] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
         // Place Black pawns
 //        for (int col = 0; col <= 7; col++){
 //            squares[1][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
@@ -143,6 +149,8 @@ public class ChessBoard {
 //        }
 
         // Leave other squares null to represent empty spaces
+        System.out.println("Board after reset:");
+        drawBoard();
     }
 
 

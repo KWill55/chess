@@ -18,7 +18,10 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
 
         //get starting position in internal format
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
-        ChessPiece bishopPiece = board.getPiece(internalPosition);
+
+        ChessPiece bishopPiece = board.getPiece(position);
+
+        System.out.println("Calculating bishop moves from: " + position);
 
         //go through each of four directions to Chess
         for (int[] direction : directions){
@@ -38,10 +41,11 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
 
                 //get piece type of target location in internal format
                 ChessPosition newInternalPosition = new ChessPosition(row,col); //internal format
-               ChessPosition newPosition = ChessBoard.toChessFormat(newInternalPosition);
+                ChessPosition newPosition = ChessBoard.toChessFormat(newInternalPosition);
 
                 ChessPiece targetPiece = board.getPiece(newInternalPosition);
 
+                System.out.println("Considering position: " + newPosition);
 
                 //check for friendly pieces in the way
                 if (targetPiece != null){

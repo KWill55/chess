@@ -53,8 +53,14 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPosition internalStartPosition = ChessBoard.fromChessFormat(startPosition);
-        ChessPiece piece = board.getPiece(internalStartPosition);
+        System.out.println("chess Start in validMoves: " + startPosition);
+        System.out.println("internal start in validmoves: " + internalStartPosition);
+        ChessPiece piece = board.getPiece(startPosition);
+
         PieceMovesCalculator calculator;
+
+
+        System.out.println("Calculating moves for piece at " + startPosition + ": " + piece);
 
         if (piece == null){
             throw new RuntimeException("No piece at the specified position.");
@@ -62,14 +68,41 @@ public class ChessGame {
 
         switch (piece.getPieceType()) {
             case BISHOP:
+                System.out.println("Using BishopMovesCalculator");
                 calculator = new BishopMovesCalculator();
                 break;
+            case ROOK:
+                System.out.println("Using RookMovesCalculator");
+                calculator = new RookMovesCalculator(); // Add this case
+                break;
+            case KNIGHT:
+                System.out.println("Using KnightMovesCalculator");
+                calculator = new KnightMovesCalculator(); // Add this case
+                break;
+            case QUEEN:
+                System.out.println("Using QueenMovesCalculator");
+                calculator = new QueenMovesCalculator(); // Add this case
+                break;
+            case KING:
+                System.out.println("Using KingMovesCalculator");
+                calculator = new KingMovesCalculator(); // Add this case
+                break;
+            case PAWN:
+                System.out.println("Using PawnMovesCalculator");
+                calculator = new PawnMovesCalculator(); // Add this case
+                break;
             default:
+                System.out.println("No moves calculator found for: " + piece.getPieceType());
                 throw new RuntimeException("No moves calculator for piece type: " + piece.getPieceType());
         }
 
         // Get valid positions for this piece
-        Collection<ChessPosition> validPositions = calculator.calculateMoves(board, internalStartPosition);
+        Collection<ChessPosition> validPositions = calculator.calculateMoves(board, startPosition);
+
+        System.out.println("Valid positions:");
+        for (ChessPosition position : validPositions) {
+            System.out.println(" - " + position);
+        }
 
         // Convert positions into ChessMove objects
         Collection<ChessMove> validMoves = new ArrayList<>();
@@ -88,35 +121,57 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        ChessPosition start = move.getStartPosition();
-        ChessPosition end = move.getEndPosition();
+        ChessPosition chessStart = move.getStartPosition();
+        ChessPosition chessEnd = move.getEndPosition();
 
-        ChessPosition internalStart = ChessBoard.fromChessFormat(start);
-        ChessPosition internalEnd = ChessBoard.fromChessFormat(end);
+        // Debug: Log start and end positions
+        System.out.println("Attempting to move from " + chessStart + " to " + chessEnd);
 
-        ChessPiece piece = board.getPiece(internalStart); //get piece type
+        ChessPosition internalStart = ChessBoard.fromChessFormat(chessStart);
+        ChessPosition internalEnd = ChessBoard.fromChessFormat(chessEnd);
 
+        // Debug: Log converted positions
+        System.out.println("Internal start: " + internalStart + ", Internal end: " + internalEnd);
+
+        ChessPiece piece = board.getPiece(chessStart); //get piece type
+
+        // Debug: Log the piece type
         if (piece == null) {
+            System.out.println("No piece at chess form " + chessStart);
+            System.out.println("No piece at array form " + internalStart);
             throw new InvalidMoveException("No piece at the starting position!");
         }
+        System.out.println("Piece to move: " + piece);
 
         // Get the valid moves for the piece
-        Collection<ChessMove> validMoves = validMoves(start);
+        System.out.println("chessStart before validMoves: " + chessStart);
+        Collection<ChessMove> validMoves = validMoves(chessStart);
 
         // Check if the desired move is valid
+
+
+        System.out.println("Valid moves for piece at " + chessStart + ":");
+        for (ChessMove validMove : validMoves) {
+            System.out.println(" - " + validMove.getEndPosition());
+        }
+
         boolean isValid = false;
         for (ChessMove validMove :validMoves){
-            if (validMove.getEndPosition().equals(end)){
+            System.out.println("Comparing: " + validMove.getEndPosition() + " with " + chessEnd);
+            if (validMove.getEndPosition().equals(chessEnd)){
                 isValid = true;
                 break;
             }
         }
         if (!isValid) {
-            throw new InvalidMoveException("Invalid move for the piece at " + start);
+            System.out.println("Move to " + chessEnd + " is invalid!");
+            throw new InvalidMoveException("Invalid move for the piece at " + chessStart);
         }
 
-        board.addPiece(internalEnd,piece); //adds move to the board
-        board.addPiece(internalStart,null); //removes piece from old position
+        System.out.println("Move is valid! Moving piece.");
+
+        board.addPiece(chessEnd,piece); //adds move to the board
+        board.addPiece(chessStart,null); //removes piece from old position
         board.drawBoard(); //update board for the user
     }
 
@@ -198,8 +253,8 @@ public class ChessGame {
 
             // Store chess positions to prepare to make the move
             ChessMove move = new ChessMove(chessStart, chessEnd, null);
-            game.makeMove(move);
-
+            game.makeMove(move); //accepts chess format positions
+            //doesnt get to this point
             if (game.currentTurn == TeamColor.WHITE){
                 game.setTeamTurn(TeamColor.BLACK);
             }
