@@ -8,7 +8,7 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
     public Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessPosition> moves = new ArrayList<>();
 
-        System.out.println("Calculating bishop moves from: " + position);
+//        System.out.println("Calculating bishop moves from: " + position);
 
         //possible directions for a bishop piece
         int[][] directions = {
@@ -21,12 +21,12 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
         //get starting position in internal format
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
         ChessPiece bishopPiece = board.getPiece(position);
-        System.out.println("bishopPiece = " + bishopPiece);
+//        System.out.println("bishopPiece = " + bishopPiece);
 
         //go through each of four directions to Chess
         for (int[] direction : directions){
-            System.out.println("direction[0] = " + direction[0]);
-            System.out.println("direction[1] = " + direction[1]);
+//            System.out.println("direction[0] = " + direction[0]);
+//            System.out.println("direction[1] = " + direction[1]);
             //different versions of the starting position of the piece
             int chessRow = position.getRow();
             int chessCol = position.getColumn();
@@ -40,11 +40,11 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
 
                 ChessPosition newInternalPosition = new ChessPosition(internalRow,internalCol); //internal format
                 ChessPosition newChessPosition = ChessBoard.toChessFormat(newInternalPosition);
-                System.out.println("Considering position: " + newChessPosition);
+//                System.out.println("Considering position: " + newChessPosition);
 
                 //check for out of bounds
                 if (!board.isWithinBounds(internalRow,internalCol)){
-                    System.out.println("Out of bounds: " + newChessPosition);
+//                    System.out.println("Out of bounds: " + newChessPosition);
                     break;
                 }
 
@@ -67,9 +67,9 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
             }
         }
 
-        System.out.println("Valid moves for Bishop at: " + position);
+//        System.out.println("Valid moves for Bishop at: " + position);
         for (ChessPosition move : moves) {
-            System.out.println("Valid move: " + move);
+//            System.out.println("Valid move: " + move);
         }
 
 

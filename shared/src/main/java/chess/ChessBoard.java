@@ -2,6 +2,8 @@ package chess;
 
 
 import java.sql.SQLOutput;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Board
@@ -128,9 +130,9 @@ public class ChessBoard {
         squares[0][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
 
         // Place Black pawns
-//        for (int col = 0; col <= 7; col++){
-//            squares[1][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
-//        }
+        for (int col = 0; col <= 7; col++){
+            squares[1][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+        }
 
         // Set up White pieces (bottom of the board)
         // Bottom left corner rook
@@ -151,9 +153,9 @@ public class ChessBoard {
         squares[7][7] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
 
         //place white pawns
-//        for (int col = 0; col <= 7; col++){
-//            squares[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-//        }
+        for (int col = 0; col <= 7; col++){
+            squares[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        }
     }
 
 
@@ -195,7 +197,17 @@ public class ChessBoard {
         System.out.println("  1 2 3 4 5 6 7 8");
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessBoard that = (ChessBoard) o;
+        return Objects.deepEquals(squares, that.squares);
+    }
 
-
-
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(squares);
+    }
 }
