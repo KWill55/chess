@@ -5,9 +5,75 @@ import java.util.Collection;
 
 public class RookMovesCalculator implements PieceMovesCalculator {
 
-    @Override
     public Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition position) {
-        // Return an empty collection for now
-        return new ArrayList<>();
+        Collection<ChessPosition> moves = new ArrayList<>();
+
+//        System.out.println("Calculating bishop moves from: " + position);
+
+        //possible directions for a bishop piece
+        int[][] directions = {
+                {1, 0},   // Right
+                {0, -1},  // Up
+                {-1, 0},  // Left
+                {0, 1}  // Down
+        };
+
+        //get starting position in internal format
+        ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
+        ChessPiece rookPiece = board.getPiece(position);
+//        System.out.println("rookPiece = " + rookPiece);
+
+        //go through each of four directions to Chess
+        for (int[] direction : directions){
+//            System.out.println("direction[0] = " + direction[0]);
+//            System.out.println("direction[1] = " + direction[1]);
+            //different versions of the starting position of the piece
+            int chessRow = position.getRow();
+            int chessCol = position.getColumn();
+            int internalRow = internalPosition.getRow();
+            int internalCol = internalPosition.getColumn();
+
+            while (true){
+                internalRow += direction[0];
+                internalCol += direction[1];
+
+
+                ChessPosition newInternalPosition = new ChessPosition(internalRow,internalCol); //internal format
+                ChessPosition newChessPosition = ChessBoard.toChessFormat(newInternalPosition);
+//                System.out.println("Considering position: " + newChessPosition);
+
+                //check for out of bounds
+                if (!board.isWithinBounds(internalRow,internalCol)){
+//                    System.out.println("Out of bounds: " + newChessPosition);
+                    break;
+                }
+
+                //get piece type of target location in internal format
+                ChessPiece targetChessPiece = board.getPiece(newChessPosition);
+
+                //check for enemy and ally pieces
+                if (targetChessPiece != null){
+                    //capture enemy
+                    if (targetChessPiece.getTeamColor() != rookPiece.getTeamColor()) {
+                        moves.add(newChessPosition);
+                        break;
+                    }
+                    //stop moving in that direction if its an ally
+                    break;
+                }
+
+                //empty space so we can add it
+                moves.add(newChessPosition);
+            }
+        }
+
+//        System.out.println("Valid moves for Bishop at: " + position);
+        for (ChessPosition move : moves) {
+//            System.out.println("Valid move: " + move);
+        }
+
+
+        // Return possible moves for a bishop
+        return moves;
     }
 }
