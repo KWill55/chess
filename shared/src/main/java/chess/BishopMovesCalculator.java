@@ -8,59 +8,66 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
     public Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessPosition> moves = new ArrayList<>();
 
+        System.out.println("Calculating bishop moves from: " + position);
+
         //possible directions for a bishop piece
         int[][] directions = {
-            {1, 1},   // Down-right
-            {1, -1},  // Down-left
-            {-1, 1},  // Up-right
-            {-1, -1}  // Up-left
+            {1, 1},   // Down right
+            {1, -1},  // Down left
+            {-1, 1},  // up right
+            {-1, -1}  // up left
         };
 
         //get starting position in internal format
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
-
         ChessPiece bishopPiece = board.getPiece(position);
-
-        System.out.println("Calculating bishop moves from: " + position);
+        System.out.println("bishopPiece = " + bishopPiece);
 
         //go through each of four directions to Chess
         for (int[] direction : directions){
-
-            //current position of the bishop
-            int row = internalPosition.getRow();
-            int col = internalPosition.getColumn();
+            System.out.println("direction[0] = " + direction[0]);
+            System.out.println("direction[1] = " + direction[1]);
+            //different versions of the starting position of the piece
+            int chessRow = position.getRow();
+            int chessCol = position.getColumn();
+            int internalRow = internalPosition.getRow();
+            int internalCol = internalPosition.getColumn();
 
             while (true){
-                row += direction[0];
-                col += direction[1];
+                internalRow += direction[0];
+                internalCol += direction[1];
+
+
+                ChessPosition newInternalPosition = new ChessPosition(internalRow,internalCol); //internal format
+                ChessPosition newChessPosition = ChessBoard.toChessFormat(newInternalPosition);
+                System.out.println("Considering position: " + newChessPosition);
 
                 //check for out of bounds
-                if (!board.isWithinBounds(row,col)){
+                if (!board.isWithinBounds(internalRow,internalCol)){
+                    System.out.println("Out of bounds: " + newChessPosition);
                     break;
                 }
 
                 //get piece type of target location in internal format
-                ChessPosition newInternalPosition = new ChessPosition(row,col); //internal format
-                ChessPosition newPosition = ChessBoard.toChessFormat(newInternalPosition);
+                ChessPiece targetChessPiece = board.getPiece(newChessPosition);
 
-                ChessPiece targetPiece = board.getPiece(newInternalPosition);
-
-                System.out.println("Considering position: " + newPosition);
-
-                //check for friendly pieces in the way
-                if (targetPiece != null){
-                    if (targetPiece.getTeamColor() != bishopPiece.getTeamColor()) {
-                        moves.add(newPosition); // Chess format
+                //check for enemy and ally pieces
+                if (targetChessPiece != null){
+                    //capture enemy
+                    if (targetChessPiece.getTeamColor() != bishopPiece.getTeamColor()) {
+                        moves.add(newChessPosition);
+                        break;
                     }
-                    break; // Stop moving further in this direction
+                    //stop moving in that direction if its an ally
+                    break;
                 }
 
-                //The current row and col are valid, so add it to possible moves
-                moves.add(newPosition);
+                //empty space so we can add it
+                moves.add(newChessPosition);
             }
         }
 
-        System.out.println("Calculating moves for Bishop at: " + position);
+        System.out.println("Valid moves for Bishop at: " + position);
         for (ChessPosition move : moves) {
             System.out.println("Valid move: " + move);
         }

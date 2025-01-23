@@ -34,7 +34,7 @@ public class ChessBoard {
         int chessCol = internalPosition.getColumn() + 1; // Converts 0-based column to 1-based column
 
         // Debug: Print the conversion
-        System.out.println("Converting from internal format: " + internalPosition + " to chesss format: (" + chessRow + ", " + chessCol + ")");
+//        System.out.println("Converting from internal format: " + internalPosition + " to chesss format: (" + chessRow + ", " + chessCol + ")");
 //        Thread.dumpStack();
         return new ChessPosition(chessRow, chessCol);
     }
@@ -47,17 +47,17 @@ public class ChessBoard {
         int internalRow = 8 - chessPosition.getRow(); // Chess row 1 → Internal row 7
         int internalCol = chessPosition.getColumn() - 1; // Chess col 1 → Internal col 0
 
-        System.out.println("Converting from Chess format: " + chessPosition + " to internal format: (" + internalRow + ", " + internalCol + ")");
+//        System.out.println("Converting from Chess format: " + chessPosition + " to internal format: (" + internalRow + ", " + internalCol + ")");
         return new ChessPosition(internalRow, internalCol);
     }
 
 
     /**
-     * tells whether a row and col in Chess format are within the 8x8 grid
+     * tells whether a row and col in array format are within the 8x8 grid
      */
-    public boolean isWithinBounds(int row, int col) {
+    public boolean isWithinBounds(int internalRow, int internalCol) {
         //in Chess format
-        if (row < 1 || row > 8 || col < 1 || col > 8) {
+        if (internalRow < 0 || internalRow > 7 || internalCol < 0 || internalCol > 7) {
             return false;
         }
         return true;
@@ -77,7 +77,14 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
+
+        if (position.getRow() < 1 || position.getRow() > 8 ||
+                position.getColumn() < 1 || position.getColumn() > 8) {
+            throw new IllegalArgumentException("Invalid chess position: " + position);
+        }
+
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
+//        System.out.println("value of internalPosition: " + internalPosition);
         squares[internalPosition.getRow()][internalPosition.getColumn()] = piece;
     }
 
@@ -91,7 +98,7 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
-        System.out.println("Accessing chess position: " + position + " array position" + internalPosition);
+//        System.out.println("Accessing chess position: " + position + " array position" + internalPosition);
 
         return squares[internalPosition.getRow()][internalPosition.getColumn()];
     }
@@ -147,10 +154,6 @@ public class ChessBoard {
 //        for (int col = 0; col <= 7; col++){
 //            squares[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
 //        }
-
-        // Leave other squares null to represent empty spaces
-        System.out.println("Board after reset:");
-        drawBoard();
     }
 
 

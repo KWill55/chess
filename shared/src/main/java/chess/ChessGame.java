@@ -53,14 +53,11 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPosition internalStartPosition = ChessBoard.fromChessFormat(startPosition);
-        System.out.println("chess Start in validMoves: " + startPosition);
-        System.out.println("internal start in validmoves: " + internalStartPosition);
         ChessPiece piece = board.getPiece(startPosition);
 
         PieceMovesCalculator calculator;
 
 
-        System.out.println("Calculating moves for piece at " + startPosition + ": " + piece);
 
         if (piece == null){
             throw new RuntimeException("No piece at the specified position.");
@@ -99,11 +96,6 @@ public class ChessGame {
         // Get valid positions for this piece
         Collection<ChessPosition> validPositions = calculator.calculateMoves(board, startPosition);
 
-        System.out.println("Valid positions:");
-        for (ChessPosition position : validPositions) {
-            System.out.println(" - " + position);
-        }
-
         // Convert positions into ChessMove objects
         Collection<ChessMove> validMoves = new ArrayList<>();
         for (ChessPosition endPosition : validPositions) {
@@ -129,9 +121,6 @@ public class ChessGame {
 
         ChessPosition internalStart = ChessBoard.fromChessFormat(chessStart);
         ChessPosition internalEnd = ChessBoard.fromChessFormat(chessEnd);
-
-        // Debug: Log converted positions
-        System.out.println("Internal start: " + internalStart + ", Internal end: " + internalEnd);
 
         ChessPiece piece = board.getPiece(chessStart); //get piece type
 

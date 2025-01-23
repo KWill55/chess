@@ -12,5 +12,5 @@ import java.util.Collection;
  */
 
 public interface PieceMovesCalculator {
-    Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition internalStartPosition);
+    Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition startPosition);
 }
