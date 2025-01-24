@@ -130,9 +130,9 @@ public class ChessBoard {
         squares[0][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
 
         // Place Black pawns
-//        for (int col = 0; col <= 7; col++){
-//            squares[1][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
-//        }
+        for (int col = 0; col <= 7; col++){
+            squares[1][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+        }
 
         // Set up White pieces (bottom of the board)
         // Bottom left corner rook
@@ -152,10 +152,12 @@ public class ChessBoard {
         // Bottom right corner rook
         squares[7][7] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
 
+        squares[5][4] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
+
         //place white pawns
-//        for (int col = 0; col <= 7; col++){
-//            squares[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-//        }
+        for (int col = 0; col <= 7; col++){
+            squares[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        }
     }
 
 

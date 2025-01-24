@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
  * signature of the existing methods.
  */
 public class ChessPiece {
-    private PieceType type; //creates reference variable for pieceType enum (blueprint)
-    private ChessGame.TeamColor pieceColor; //creates reference variable for TeamColor enum (blueprint)
+    private final PieceType type; //creates reference variable for pieceType enum (blueprint)
+    private final ChessGame.TeamColor pieceColor; //creates reference variable for TeamColor enum (blueprint)
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor; //assign parameter pieceColor to value of reference variable pieceColor
