@@ -82,11 +82,11 @@ public class ChessPiece {
 
         // Calculate moves using the specific calculator
         ChessPosition myInternalPosition = ChessBoard.fromChessFormat(myPosition);
-        Collection<ChessPosition> validPositions = calculator.calculateMoves(board, myPosition);
+        Collection<ChessMove> validMoves = calculator.calculateMoves(board, myPosition);
 
-        return validPositions.stream()
-                .map(pos -> new ChessMove(myPosition, pos, null))
+        return validMoves.stream()
                 .collect(Collectors.toList());
+
 
     }
 

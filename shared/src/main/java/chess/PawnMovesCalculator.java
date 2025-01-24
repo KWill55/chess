@@ -6,7 +6,8 @@ import java.util.stream.Collectors;
 
 public class PawnMovesCalculator implements PieceMovesCalculator {
 
-    public Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition position) {
+    @Override
+    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
 
         // Get starting position and color of the pawn
@@ -37,9 +38,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         }
 
         // Convert moves (ChessMove) to positions (ChessPosition)
-        return moves.stream()
-                .map(ChessMove::getEndPosition)
-                .collect(Collectors.toList());
+        return moves;
     }
 
     private void addForwardMoves(Collection<ChessMove> moves, ChessBoard board, ChessPosition position,

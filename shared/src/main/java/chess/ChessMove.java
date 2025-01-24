@@ -46,7 +46,6 @@ public class ChessMove {
     }
 
 
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {

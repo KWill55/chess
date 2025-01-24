@@ -5,8 +5,8 @@ import java.util.Collection;
 
 public class QueenMovesCalculator implements PieceMovesCalculator {
 
-    public Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition position) {
-        Collection<ChessPosition> moves = new ArrayList<>();
+    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
+        Collection<ChessMove> moves = new ArrayList<>();
 
 //        System.out.println("Calculating Queen moves from: " + position);
 
@@ -59,7 +59,7 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
                 if (targetChessPiece != null){
                     //capture enemy
                     if (targetChessPiece.getTeamColor() != queenPiece.getTeamColor()) {
-                        moves.add(newChessPosition);
+                        moves.add(new ChessMove(position, newChessPosition, null));
                         break;
                     }
                     //stop moving in that direction if its an ally
@@ -67,12 +67,12 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
                 }
 
                 //empty space so we can add it
-                moves.add(newChessPosition);
+                moves.add(new ChessMove(position, newChessPosition, null));
             }
         }
 
 //        System.out.println("Valid moves for Queen at: " + position);
-        for (ChessPosition move : moves) {
+        for (ChessMove move : moves) {
 //            System.out.println("Valid move: " + move);
         }
 

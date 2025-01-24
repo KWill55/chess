@@ -94,13 +94,12 @@ public class ChessGame {
         }
 
         // Get valid positions for this piece
-        Collection<ChessPosition> validPositions = calculator.calculateMoves(board, startPosition);
+        Collection<ChessMove> validMoves = calculator.calculateMoves(board, startPosition);
 
-        // Convert positions into ChessMove objects
-        Collection<ChessMove> validMoves = new ArrayList<>();
-        for (ChessPosition endPosition : validPositions) {
-            validMoves.add(new ChessMove(startPosition, endPosition, null));
-        }
+//       Collection<ChessMove> processedMoves = new ArrayList<>();
+//        for (ChessMove move : validMoves) {
+//            processedMoves.add(new ChessMove(startPosition, move.getEndPosition(), null));
+//        }
 
         return validMoves;
 
