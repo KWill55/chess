@@ -2,11 +2,12 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
+/**
+ * Determines possible moves a pawn at a certain position is allowed to take
+ */
 public class PawnMovesCalculator implements PieceMovesCalculator {
 
-    @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
 
@@ -41,14 +42,22 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         return moves;
     }
 
+
+    /**
+     * this method adds the valid forward moves a pawn can take
+     */
     private void addForwardMoves(Collection<ChessMove> moves, ChessBoard board, ChessPosition position,
                                  int[][] directions, ChessGame.TeamColor pawnColor) {
 
+        //determine internal positions of the given position
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
         int internalRow = internalPosition.getRow();
         int internalCol = internalPosition.getColumn();
 
+        //iterate through possible directions of a pawn
         for (int[] direction : directions) {
+
+            //calcualte and store new location of the pawn
             int newInternalRow = internalRow + direction[0];
             int newInternalCol = internalCol + direction[1];
             ChessPosition newInternalPosition = new ChessPosition(newInternalRow, newInternalCol);
@@ -85,13 +94,20 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         }
     }
 
+    /**
+     * This method add the valid capture moves a pawn can take
+     */
     private void addCaptureMoves(Collection<ChessMove> moves, ChessBoard board, ChessPosition position,
                                  int[][] directions, ChessGame.TeamColor pawnColor) {
+
+        //convert and store internal positions given the position argument
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
         int internalRow = internalPosition.getRow();
         int internalCol = internalPosition.getColumn();
 
+        //go through each possible direction when capturing an enemy piece
         for (int[] direction : directions) {
+            //new location of the pawn if capture is valid
             int newInternalRow = internalRow + direction[0];
             int newInternalCol = internalCol + direction[1];
             ChessPosition newInternalPosition = new ChessPosition(newInternalRow, newInternalCol);
@@ -117,16 +133,25 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         }
     }
 
+    /**
+     * returns whether or not a pawn is in its starting position
+     */
     private boolean isStartingPosition(ChessPosition position, ChessGame.TeamColor pawnColor) {
         return (pawnColor == ChessGame.TeamColor.WHITE && position.getRow() == 2)
                 || (pawnColor == ChessGame.TeamColor.BLACK && position.getRow() == 7);
     }
 
+    /**
+     * returns if a pawn arrives at the last row of the board, awarding it a promotion
+     */
     private boolean isPromotionRow(ChessPosition position, ChessGame.TeamColor pawnColor) {
         return (pawnColor == ChessGame.TeamColor.WHITE && position.getRow() == 8)
                 || (pawnColor == ChessGame.TeamColor.BLACK && position.getRow() == 1);
     }
 
+    /**
+     * Adds the possible promotions of the pawns to moves
+     */
     private void addPromotionMoves(Collection<ChessMove> moves, ChessPosition startPosition, ChessPosition endPosition) {
         moves.add(new ChessMove(startPosition, endPosition, ChessPiece.PieceType.QUEEN));
         moves.add(new ChessMove(startPosition, endPosition, ChessPiece.PieceType.ROOK));

@@ -1,6 +1,5 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -81,7 +80,6 @@ public class ChessPiece {
         }
 
         // Calculate moves using the specific calculator
-        ChessPosition myInternalPosition = ChessBoard.fromChessFormat(myPosition);
         Collection<ChessMove> validMoves = calculator.calculateMoves(board, myPosition);
 
         return validMoves.stream()

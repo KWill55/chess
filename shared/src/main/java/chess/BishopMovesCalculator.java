@@ -3,12 +3,13 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Determines possible moves a bishop at a certain position is allowed to take
+ */
 public class BishopMovesCalculator implements PieceMovesCalculator {
 
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
-
-//        System.out.println("Calculating bishop moves from: " + position);
 
         //possible directions for a bishop piece
         int[][] directions = {
@@ -18,33 +19,28 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
             {-1, -1}  // up left
         };
 
-        //get starting position in internal format
+        //get starting position of bishop in internal format
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
         ChessPiece bishopPiece = board.getPiece(position);
-//        System.out.println("bishopPiece = " + bishopPiece);
 
-        //go through each of four directions to Chess
+        //go through each of the possible directions a bishop can travel
         for (int[] direction : directions){
-//            System.out.println("direction[0] = " + direction[0]);
-//            System.out.println("direction[1] = " + direction[1]);
-            //different versions of the starting position of the piece
-            int chessRow = position.getRow();
-            int chessCol = position.getColumn();
+
+            //reset to starting piece between iterations
             int internalRow = internalPosition.getRow();
             int internalCol = internalPosition.getColumn();
 
+            //move in current direction until something causes a break and transition to next direction
             while (true){
                 internalRow += direction[0];
                 internalCol += direction[1];
 
-
+                //translate internal format to chess format
                 ChessPosition newInternalPosition = new ChessPosition(internalRow,internalCol); //internal format
                 ChessPosition newChessPosition = ChessBoard.toChessFormat(newInternalPosition);
-//                System.out.println("Considering position: " + newChessPosition);
 
                 //check for out of bounds
                 if (!board.isWithinBounds(internalRow,internalCol)){
-//                    System.out.println("Out of bounds: " + newChessPosition);
                     break;
                 }
 
@@ -58,7 +54,7 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
                         moves.add(new ChessMove(position, newChessPosition, null));
                         break;
                     }
-                    //stop moving in that direction if its an ally
+                    //stop moving in that direction if it's an ally
                     break;
                 }
 
@@ -66,12 +62,6 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
                 moves.add(new ChessMove(position, newChessPosition, null));
             }
         }
-
-//        System.out.println("Valid moves for Bishop at: " + position);
-        for (ChessMove move : moves) {
-//            System.out.println("Valid move: " + move);
-        }
-
 
         // Return possible moves for a bishop
         return moves;

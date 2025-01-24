@@ -14,6 +14,10 @@ public class ChessMove {
     private ChessPiece.PieceType promotionPiece;
 
 
+    /**
+     * Constructs a ChessMove with the specified start position, end position,
+     * and optional promotion piece.
+     */
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
         this.startPosition = startPosition;

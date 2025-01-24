@@ -3,14 +3,15 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Determines possible moves a rook at a certain position is allowed to take
+ */
 public class RookMovesCalculator implements PieceMovesCalculator {
 
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
 
-//        System.out.println("Calculating bishop moves from: " + position);
-
-        //possible directions for a bishop piece
+        //possible directions for a rook piece
         int[][] directions = {
                 {1, 0},   // Right
                 {0, -1},  // Up
@@ -21,30 +22,23 @@ public class RookMovesCalculator implements PieceMovesCalculator {
         //get starting position in internal format
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
         ChessPiece rookPiece = board.getPiece(position);
-//        System.out.println("rookPiece = " + rookPiece);
 
-        //go through each of four directions to Chess
+        //iterate through possible rook directions
         for (int[] direction : directions){
-//            System.out.println("direction[0] = " + direction[0]);
-//            System.out.println("direction[1] = " + direction[1]);
-            //different versions of the starting position of the piece
-            int chessRow = position.getRow();
-            int chessCol = position.getColumn();
+            //initial location of the rook
             int internalRow = internalPosition.getRow();
             int internalCol = internalPosition.getColumn();
 
+            //travel in direction until invalid move
             while (true){
+                //calculate and store new location of rook
                 internalRow += direction[0];
                 internalCol += direction[1];
-
-
                 ChessPosition newInternalPosition = new ChessPosition(internalRow,internalCol); //internal format
                 ChessPosition newChessPosition = ChessBoard.toChessFormat(newInternalPosition);
-//                System.out.println("Considering position: " + newChessPosition);
 
                 //check for out of bounds
                 if (!board.isWithinBounds(internalRow,internalCol)){
-//                    System.out.println("Out of bounds: " + newChessPosition);
                     break;
                 }
 
@@ -66,12 +60,6 @@ public class RookMovesCalculator implements PieceMovesCalculator {
                 moves.add(new ChessMove(position, newChessPosition, null));
             }
         }
-
-//        System.out.println("Valid moves for Bishop at: " + position);
-        for (ChessMove move : moves) {
-//            System.out.println("Valid move: " + move);
-        }
-
 
         // Return possible moves for a bishop
         return moves;

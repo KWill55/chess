@@ -1,7 +1,5 @@
 package chess;
 
-
-import java.sql.SQLOutput;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -18,8 +16,6 @@ import java.util.Objects;
  * .
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
  */
 public class ChessBoard {
     private ChessPiece[][] squares = new ChessPiece[8][8]; //creates squares object
@@ -34,10 +30,6 @@ public class ChessBoard {
     public static ChessPosition toChessFormat(ChessPosition internalPosition) {
         int chessRow = 8 - internalPosition.getRow() ;  // Converts top-down 0-based row to bottom-up 1-based row
         int chessCol = internalPosition.getColumn() + 1; // Converts 0-based column to 1-based column
-
-        // Debug: Print the conversion
-//        System.out.println("Converting from internal format: " + internalPosition + " to chesss format: (" + chessRow + ", " + chessCol + ")");
-//        Thread.dumpStack();
         return new ChessPosition(chessRow, chessCol);
     }
 
@@ -48,8 +40,6 @@ public class ChessBoard {
     public static ChessPosition fromChessFormat(ChessPosition chessPosition) {
         int internalRow = 8 - chessPosition.getRow(); // Chess row 1 → Internal row 7
         int internalCol = chessPosition.getColumn() - 1; // Chess col 1 → Internal col 0
-
-//        System.out.println("Converting from Chess format: " + chessPosition + " to internal format: (" + internalRow + ", " + internalCol + ")");
         return new ChessPosition(internalRow, internalCol);
     }
 
@@ -58,17 +48,11 @@ public class ChessBoard {
      * tells whether a row and col in array format are within the 8x8 grid
      */
     public boolean isWithinBounds(int internalRow, int internalCol) {
-        //in Chess format
+        //calculated in internal array format
         if (internalRow < 0 || internalRow > 7 || internalCol < 0 || internalCol > 7) {
             return false;
         }
         return true;
-
-
-        //in internal format?
-//        ChessPosition chessPosition = new ChessPosition(row,col);
-//        ChessPosition internalChessPosition = ChessBoard.fromChessFormat(chessPosition);
-//        return internalChessPosition.getRow >= 0 && row <= 8 && col >= 0 && col <= 8;
         }
 
 
@@ -79,14 +63,14 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-
+        //make sure that the piece is within the bounds of the board
         if (position.getRow() < 1 || position.getRow() > 8 ||
                 position.getColumn() < 1 || position.getColumn() > 8) {
             throw new IllegalArgumentException("Invalid chess position: " + position);
         }
 
+        //convert piece to internal array format and place it on the board
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
-//        System.out.println("value of internalPosition: " + internalPosition);
         squares[internalPosition.getRow()][internalPosition.getColumn()] = piece;
     }
 
@@ -99,9 +83,8 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
+        //converts chess position to internal array format and returns the piece found there on the board
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
-//        System.out.println("Accessing chess position: " + position + " array position" + internalPosition);
-
         return squares[internalPosition.getRow()][internalPosition.getColumn()];
     }
 
@@ -151,8 +134,6 @@ public class ChessBoard {
         squares[7][6] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
         // Bottom right corner rook
         squares[7][7] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
-
-        squares[5][4] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
 
         //place white pawns
         for (int col = 0; col <= 7; col++){

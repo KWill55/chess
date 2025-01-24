@@ -3,12 +3,13 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Determines possible moves a queen at a certain position is allowed to take
+ */
 public class QueenMovesCalculator implements PieceMovesCalculator {
 
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
-
-//        System.out.println("Calculating Queen moves from: " + position);
 
         //possible directions for a Queen piece
         int[][] directions = {
@@ -25,30 +26,23 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
         //get starting position in internal format
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
         ChessPiece queenPiece = board.getPiece(position);
-//        System.out.println("queenPiece = " + queenPiece);
 
-        //go through each of four directions to Chess
+        //iterate through possible queen directions
         for (int[] direction : directions){
-//            System.out.println("direction[0] = " + direction[0]);
-//            System.out.println("direction[1] = " + direction[1]);
-            //different versions of the starting position of the piece
-            int chessRow = position.getRow();
-            int chessCol = position.getColumn();
+            //initial position of the queen
             int internalRow = internalPosition.getRow();
             int internalCol = internalPosition.getColumn();
 
+            //move queen in direction until invalid move
             while (true){
+                //calculate and store new position of the queen
                 internalRow += direction[0];
                 internalCol += direction[1];
-
-
                 ChessPosition newInternalPosition = new ChessPosition(internalRow,internalCol); //internal format
                 ChessPosition newChessPosition = ChessBoard.toChessFormat(newInternalPosition);
-//                System.out.println("Considering position: " + newChessPosition);
 
                 //check for out of bounds
                 if (!board.isWithinBounds(internalRow,internalCol)){
-//                    System.out.println("Out of bounds: " + newChessPosition);
                     break;
                 }
 
@@ -70,12 +64,6 @@ public class QueenMovesCalculator implements PieceMovesCalculator {
                 moves.add(new ChessMove(position, newChessPosition, null));
             }
         }
-
-//        System.out.println("Valid moves for Queen at: " + position);
-        for (ChessMove move : moves) {
-//            System.out.println("Valid move: " + move);
-        }
-
 
         // Return possible moves for a queen
         return moves;

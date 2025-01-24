@@ -3,12 +3,13 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Determines possible moves a king at a certain position is allowed to take
+ */
 public class KingMovesCalculator implements PieceMovesCalculator {
 
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
-
-//        System.out.println("Calculating King moves from: " + position);
 
         //possible directions for a king piece
         int[][] directions = {
@@ -25,32 +26,28 @@ public class KingMovesCalculator implements PieceMovesCalculator {
         //get starting position in internal format
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
         ChessPiece kingPiece = board.getPiece(position);
-//        System.out.println("kingPiece = " + kingPiece);
 
-        //go through each of four directions to Chess
+        //loop through possible king moves
         for (int[] direction : directions){
-//            System.out.println("direction[0] = " + direction[0]);
-//            System.out.println("direction[1] = " + direction[1]);
-            //different versions of the starting position of the piece
-            int chessRow = position.getRow();
-            int chessCol = position.getColumn();
+
+            //set King's initial starting row and column
             int internalRow = internalPosition.getRow();
             int internalCol = internalPosition.getColumn();
 
 
-
+            //go for the length of a king's possible move
             for (int i = 0; i<1; i++){
+
+                //move king to current directions
                 internalRow += direction[0];
                 internalCol += direction[1];
 
-
+                //save new location (possible valid movement)
                 ChessPosition newInternalPosition = new ChessPosition(internalRow,internalCol); //internal format
                 ChessPosition newChessPosition = ChessBoard.toChessFormat(newInternalPosition);
-//                System.out.println("Considering position: " + newChessPosition);
 
                 //check for out of bounds
                 if (!board.isWithinBounds(internalRow,internalCol)){
-//                    System.out.println("Out of bounds: " + newChessPosition);
                     break;
                 }
 
@@ -73,12 +70,6 @@ public class KingMovesCalculator implements PieceMovesCalculator {
 
             }
         }
-
-//        System.out.println("Valid moves for king at: " + position);
-        for (ChessMove move : moves) {
-//            System.out.println("Valid move: " + move);
-        }
-
 
         // Return possible moves for a king
         return moves;
