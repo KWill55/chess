@@ -2,10 +2,11 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class PawnMovesCalculator implements PieceMovesCalculator {
 
-    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
+    public Collection<ChessPosition> calculateMoves(ChessBoard board, ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
 
         // Get starting position and color of the pawn
@@ -29,12 +30,18 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         // Add capture moves
         addCaptureMoves(moves, board, position, captureDirections, pawnColor);
 
-        return moves;
+        // Debugging: Print all generated moves
+        System.out.println("Generated moves for pawn at " + position + ":");
+        for (ChessMove move : moves) {
+            System.out.println("  " + move);
+        }
+
+        // Convert moves (ChessMove) to positions (ChessPosition)
+        return moves.stream()
+                .map(ChessMove::getEndPosition)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Adds valid forward moves for the pawn.
-     */
     private void addForwardMoves(Collection<ChessMove> moves, ChessBoard board, ChessPosition position,
                                  int[][] directions, ChessGame.TeamColor pawnColor) {
 
@@ -43,54 +50,42 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         int internalCol = internalPosition.getColumn();
 
         for (int[] direction : directions) {
-            internalRow = internalRow + direction[0];
-            internalCol = internalCol + direction[1];
-            ChessPosition newInternalPosition = new ChessPosition(internalRow, internalCol);
+            int newInternalRow = internalRow + direction[0];
+            int newInternalCol = internalCol + direction[1];
+            ChessPosition newInternalPosition = new ChessPosition(newInternalRow, newInternalCol);
             ChessPosition newPosition = ChessBoard.toChessFormat(newInternalPosition);
 
             // Check if the position is within bounds
-            if (!board.isWithinBounds(internalRow, internalCol)) {
-                break; // Stop if out of bounds
+            if (!board.isWithinBounds(newInternalRow, newInternalCol)) {
+                break;
             }
 
             // Ensure the square is unoccupied
             if (board.getPiece(newPosition) != null) {
-                break; // Stop if a piece is blocking forward movement
+                break;
             }
 
-            //break if its trying to move two when not at starting position
-            if ((direction[0] == 2) || (direction[0] == -2)) {
-                if (!isStartingPosition(position, pawnColor)) {
-                    break;
-                }
-
-                //maybe delete
+            // Double move logic
+            if (Math.abs(direction[0]) == 2) {
                 int midRow = internalRow + direction[0] / 2;
                 ChessPosition midInternalPosition = new ChessPosition(midRow, internalCol);
                 ChessPosition midPosition = ChessBoard.toChessFormat(midInternalPosition);
-                if (board.getPiece(midPosition) != null) {
-                    break; // Stop if the square in between is occupied
+                if (board.getPiece(midPosition) != null || !isStartingPosition(position, pawnColor)) {
+                    break;
                 }
             }
 
-            //double move
-
-            // Add valid move
             // Check for promotion
             if (isPromotionRow(newPosition, pawnColor)) {
                 addPromotionMoves(moves, position, newPosition);
-                break; // Stop after adding promotion moves
+                continue; // Continue to next direction after adding promotion
             }
 
+            // Add move
             moves.add(new ChessMove(position, newPosition, null));
-
-
         }
-        }
+    }
 
-    /**
-     * Adds valid capture moves for the pawn.
-     */
     private void addCaptureMoves(Collection<ChessMove> moves, ChessBoard board, ChessPosition position,
                                  int[][] directions, ChessGame.TeamColor pawnColor) {
         ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
@@ -98,14 +93,14 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         int internalCol = internalPosition.getColumn();
 
         for (int[] direction : directions) {
-            internalRow = internalRow + direction[0];
-            internalCol = internalCol + direction[1];
-            ChessPosition newInternalPosition = new ChessPosition(internalRow, internalCol);
+            int newInternalRow = internalRow + direction[0];
+            int newInternalCol = internalCol + direction[1];
+            ChessPosition newInternalPosition = new ChessPosition(newInternalRow, newInternalCol);
             ChessPosition newPosition = ChessBoard.toChessFormat(newInternalPosition);
 
             // Check if the position is within bounds
-            if (!board.isWithinBounds(internalRow, internalCol)) {
-                continue; // Skip if out of bounds
+            if (!board.isWithinBounds(newInternalRow, newInternalCol)) {
+                continue;
             }
 
             // Check if there's an enemy piece to capture
@@ -114,27 +109,20 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
                 // Check for promotion
                 if (isPromotionRow(newPosition, pawnColor)) {
                     addPromotionMoves(moves, position, newPosition);
-                    break; // Stop after adding promotion moves
+                    continue;
                 }
+
                 // Add capture move
                 moves.add(new ChessMove(position, newPosition, null));
-
-//                moves.add(newPosition);
             }
         }
     }
 
-    /**
-     * Checks if the pawn is in its starting position.
-     */
     private boolean isStartingPosition(ChessPosition position, ChessGame.TeamColor pawnColor) {
         return (pawnColor == ChessGame.TeamColor.WHITE && position.getRow() == 2)
                 || (pawnColor == ChessGame.TeamColor.BLACK && position.getRow() == 7);
     }
 
-    /**
-     * Checks if the pawn is at the promotion row.
-     */
     private boolean isPromotionRow(ChessPosition position, ChessGame.TeamColor pawnColor) {
         return (pawnColor == ChessGame.TeamColor.WHITE && position.getRow() == 8)
                 || (pawnColor == ChessGame.TeamColor.BLACK && position.getRow() == 1);
@@ -147,4 +135,3 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         moves.add(new ChessMove(startPosition, endPosition, ChessPiece.PieceType.KNIGHT));
     }
 }
-
