@@ -2,22 +2,20 @@ package chess;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
- * Responsibility: represent data of a chess piece (color, type)
  * Represents a single chess piece
  * <p>
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
 public class ChessPiece {
-    private final PieceType type; //creates reference variable for pieceType enum (blueprint)
-    private final ChessGame.TeamColor pieceColor; //creates reference variable for TeamColor enum (blueprint)
+    private ChessGame.TeamColor pieceColor;
+    private ChessPiece.PieceType type;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-        this.pieceColor = pieceColor; //assign parameter pieceColor to value of reference variable pieceColor
-        this.type = type; //assign parameter type to value of reference variable type
+        this.pieceColor = pieceColor;
+        this.type = type;
     }
 
     /**
@@ -55,8 +53,12 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         PieceMovesCalculator calculator;
+        ChessPiece piece = board.getPiece(myPosition);
 
-        switch (type) {
+        switch(piece.getPieceType()){
+            case QUEEN:
+                calculator = new QueenMovesCalculator();
+                break;
             case ROOK:
                 calculator = new RookMovesCalculator();
                 break;
@@ -66,34 +68,20 @@ public class ChessPiece {
             case KNIGHT:
                 calculator = new KnightMovesCalculator();
                 break;
-            case PAWN:
-                calculator = new PawnMovesCalculator();
-                break;
-            case QUEEN:
-                calculator = new QueenMovesCalculator();
-                break;
             case KING:
                 calculator = new KingMovesCalculator();
                 break;
+            case PAWN:
+                calculator = new PawnMovesCalculator();
+                break;
             default:
-                throw new IllegalArgumentException("Unknown piece type");
+                throw new RuntimeException("Not a valid piece type");
         }
 
-        // Calculate moves using the specific calculator
-        Collection<ChessMove> validMoves = calculator.calculateMoves(board, myPosition);
-
-        return validMoves.stream()
-                .collect(Collectors.toList());
+        Collection<ChessMove> validMoves = calculator.calculateMoves(myPosition, board);
 
 
-    }
-
-    @Override
-    public String toString() {
-        return "Piece{" +
-                "type=" + type +
-                ", Color=" + pieceColor +
-                '}';
+        return validMoves;
     }
 
     @Override
@@ -102,11 +90,19 @@ public class ChessPiece {
             return false;
         }
         ChessPiece that = (ChessPiece) o;
-        return type == that.type && pieceColor == that.pieceColor;
+        return pieceColor == that.pieceColor && type == that.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, pieceColor);
+        return Objects.hash(pieceColor, type);
+    }
+
+    @Override
+    public String toString() {
+        return "Piece{" +
+                "Color=" + pieceColor +
+                ", type=" + type +
+                '}';
     }
 }

@@ -1,67 +1,55 @@
 package chess;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/**
- * Determines possible moves a rook at a certain position is allowed to take
- */
 public class RookMovesCalculator implements PieceMovesCalculator {
+    public Collection<ChessMove> calculateMoves(ChessPosition position, ChessBoard board){
+        Collection<ChessMove> validMoves = new ArrayList<>();
 
-    public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
-        Collection<ChessMove> moves = new ArrayList<>();
-
-        //possible directions for a rook piece
         int[][] directions = {
-                {1, 0},   // Right
-                {0, -1},  // Up
-                {-1, 0},  // Left
-                {0, 1}  // Down
+                {1,0},
+                {-1,0},
+                {0,1},
+                {0,-1},
         };
 
-        //get starting position in internal format
-        ChessPosition internalPosition = ChessBoard.fromChessFormat(position);
-        ChessPiece rookPiece = board.getPiece(position);
-
-        //iterate through possible rook directions
         for (int[] direction : directions){
-            //initial location of the rook
+            ChessPosition internalPosition = board.fromChessFormat(position);
             int internalRow = internalPosition.getRow();
             int internalCol = internalPosition.getColumn();
 
-            //travel in direction until invalid move
             while (true){
-                //calculate and store new location of rook
                 internalRow += direction[0];
                 internalCol += direction[1];
-                ChessPosition newInternalPosition = new ChessPosition(internalRow,internalCol); //internal format
-                ChessPosition newChessPosition = ChessBoard.toChessFormat(newInternalPosition);
 
-                //check for out of bounds
-                if (!board.isWithinBounds(internalRow,internalCol)){
+                ChessPosition newInternalPosition = new ChessPosition(internalRow, internalCol);
+                ChessPosition newPosition = board.toChessFormat(newInternalPosition);
+
+
+                if (!board.isWithinBounds(newPosition)){
                     break;
                 }
 
-                //get piece type of target location in internal format
-                ChessPiece targetChessPiece = board.getPiece(newChessPosition);
+                ChessPiece piece = board.getPiece(position);
+                ChessPiece newPiece = board.getPiece(newPosition);
+                ChessMove move = new ChessMove(position, newPosition,null);
 
-                //check for enemy and ally pieces
-                if (targetChessPiece != null){
-                    //capture enemy
-                    if (targetChessPiece.getTeamColor() != rookPiece.getTeamColor()) {
-                        moves.add(new ChessMove(position, newChessPosition, null));
+                if (newPiece != null){
+                    if (piece.getTeamColor() != newPiece.getTeamColor()){
+                        validMoves.add(move);
                         break;
                     }
-                    //stop moving in that direction if its an ally
-                    break;
+                    else{
+                        break;
+                    }
                 }
 
-                //empty space so we can add it
-                moves.add(new ChessMove(position, newChessPosition, null));
+                validMoves.add(move);
             }
         }
 
-        // Return possible moves for a bishop
-        return moves;
+        return validMoves;
     }
 }

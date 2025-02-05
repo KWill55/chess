@@ -1,35 +1,13 @@
-Understanding how these files work together:
-
-ChessBoard.java - represents the chessboard
-* holds pieces in 8x8 grid of chessPiece objects
-* methods to rearrange pieces
-* stores state of board
-
-ChessGame.java - manages game logic
-* tracks player turn
-* coordinates moves on ChessBoard
-* validates moves using PieceMovesCalculator and ChessMove
-* updates board by calling methods in ChessBoard after each move
-
-ChessMove.java - single move
-* stores start/end positions of the piece chosen
-* stores piece being moved
-* captured pieces?
-
-ChessPiece - represents chess piece
-* stores type and color of chess pieces
-* PieceMovesCalculator needs to know piece type to determine valid moves
-
-ChessPosition - represents a single square within squares (board)
-* stores row and column of the square
-* ChessMove and ChessBoard uses this to track positions
-
-PieceMovesCalculator
-* determines legal moves for chess pieces
-* maybe use an enum?
+Things to Review:
+* interfaces
+* static
+* throwing errors
+* syntax for scanner
+* collection and collectors
+* java.util.objects
+* this.
+* constructors
 
 
 
-Plan of attack:
-1. make board with pieces on it (ChessBoard and ChessPiece)
-2.
+

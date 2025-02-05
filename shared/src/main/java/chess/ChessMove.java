@@ -13,11 +13,6 @@ public class ChessMove {
     private ChessPosition endPosition;
     private ChessPiece.PieceType promotionPiece;
 
-
-    /**
-     * Constructs a ChessMove with the specified start position, end position,
-     * and optional promotion piece.
-     */
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
         this.startPosition = startPosition;
@@ -49,7 +44,6 @@ public class ChessMove {
         return promotionPiece;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -69,7 +63,7 @@ public class ChessMove {
         return "Move{" +
                 "start=" + startPosition +
                 ", end=" + endPosition +
-                ", prom.=" + promotionPiece +
+                ", promPiece=" + promotionPiece +
                 '}';
     }
 }
