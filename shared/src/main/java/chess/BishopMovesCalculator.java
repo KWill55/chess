@@ -46,11 +46,9 @@ public class BishopMovesCalculator implements PieceMovesCalculator {
                         break;
                     }
                 }
-
                 validMoves.add(move);
             }
         }
-
         return validMoves;
     }
 }

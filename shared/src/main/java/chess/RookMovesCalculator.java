@@ -45,7 +45,6 @@ public class RookMovesCalculator implements PieceMovesCalculator {
                         break;
                     }
                 }
-
                 validMoves.add(move);
             }
         }

@@ -1,8 +1,6 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -13,17 +11,19 @@ import java.util.Scanner;
  */
 public class ChessGame {
     ChessBoard board;
+    private TeamColor currentTeamTurn;
 
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
+        this.currentTeamTurn = ChessGame.TeamColor.WHITE;
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return currentTeamTurn;
     }
 
     /**
@@ -32,7 +32,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        currentTeamTurn = team;
     }
 
     /**
@@ -51,33 +51,9 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        PieceMovesCalculator calculator;
         ChessPiece piece = board.getPiece(startPosition);
+        Collection<ChessMove> validMoves = piece.pieceMoves(board,startPosition);
 
-        switch(piece.getPieceType()){
-            case QUEEN:
-                calculator = new QueenMovesCalculator();
-                break;
-            case ROOK:
-                calculator = new RookMovesCalculator();
-                break;
-            case BISHOP:
-                calculator = new BishopMovesCalculator();
-                break;
-            case KNIGHT:
-                calculator = new KnightMovesCalculator();
-                break;
-            case KING:
-                calculator = new KingMovesCalculator();
-                break;
-            case PAWN:
-                calculator = new PawnMovesCalculator();
-                break;
-            default:
-                throw new RuntimeException("Not a valid piece type");
-        }
-
-        Collection<ChessMove> validMoves = calculator.calculateMoves(startPosition, board);
         return validMoves;
     }
 
@@ -108,6 +84,8 @@ public class ChessGame {
                 board.addPiece(newPosition, piece);
             }
         }
+
+        currentTeamTurn = changeTeamTurn(currentTeamTurn);
     }
 
     /**
@@ -117,6 +95,18 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+
+        // Determine which team is the enemy team TODO maybe this isnt nececessary
+//        TeamColor enemyTeam;
+//        if (teamColor == ChessGame.TeamColor.BLACK){
+//            enemyTeam = ChessGame.TeamColor.WHITE;
+//        }
+//        else{
+//            enemyTeam = ChessGame.TeamColor.BLACK;
+//        }
+
+        //go through the board to see if any enemyPieces put teamColor in check
+
         throw new RuntimeException("Not implemented");
     }
 
@@ -156,16 +146,35 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
+
+
+    /**
+     * takes in @currentTeamTurn and
+     * changes it
+     */
+    public TeamColor changeTeamTurn(TeamColor currentTeamTurn){
+        //change team turn
+        if (currentTeamTurn == ChessGame.TeamColor.BLACK){
+            currentTeamTurn = ChessGame.TeamColor.WHITE;
+        }
+        else{
+            currentTeamTurn = ChessGame.TeamColor.BLACK;
+        }
+
+        return currentTeamTurn;
+    }
+
+
 
     public static void main(String[] args) throws InvalidMoveException{
         ChessGame game = new ChessGame();
         Scanner scanner = new Scanner(System.in);
 
-
         while (true){
             game.board.drawBoard();
+            System.out.println("Current Team Turn: " + game.currentTeamTurn);
 
             System.out.println("Pick starting piece");
             int startRow = scanner.nextInt();
