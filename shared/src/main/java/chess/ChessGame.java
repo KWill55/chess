@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Scanner;
 
@@ -51,8 +52,31 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        //array to store valid Moves
+        Collection<ChessMove> validMoves = new ArrayList<>();
+
+        //Get valid moves for the given piece, not including specific chess rules
         ChessPiece piece = board.getPiece(startPosition);
-        Collection<ChessMove> validMoves = piece.pieceMoves(board,startPosition);
+        Collection<ChessMove> pieceMoves = piece.pieceMoves(board,startPosition);
+
+        //filter valid moves from pieceMoves
+        for (ChessMove move : pieceMoves){
+            boolean isValid = true;
+
+            //gain info about move
+            ChessPosition movePosition = move.getStartPosition();
+            ChessPosition newMovePosition = move.getEndPosition();
+            ChessPiece movePiece = board.getPiece(movePosition);
+
+            //eliminate pieceMoves for the other team
+            if (movePiece.getTeamColor() != currentTeamTurn){
+                isValid = false;
+                continue;
+            }
+
+
+            validMoves.add(move);
+        }
 
         return validMoves;
     }
@@ -68,17 +92,14 @@ public class ChessGame {
         ChessPosition newPosition = move.getEndPosition();
         ChessPiece piece = board.getPiece(position);
 
-        if (piece == null){
-            throw new InvalidMoveException("Invalid piece");
-        }
-
         Collection<ChessMove> validMoves = validMoves(position);
 
-        System.out.println(validMoves);
+        //throw Exception if move is not valid
+        if (!validMoves.contains(move)){
+            throw new InvalidMoveException("Invalid Move, please try again");
+        }
 
         for (ChessMove validMove : validMoves){
-            System.out.println(validMove.getEndPosition());
-            System.out.println(newPosition);;
             if (validMove.getEndPosition().equals (newPosition)){
                 board.addPiece(position, null);
                 board.addPiece(newPosition, piece);
