@@ -57,6 +57,13 @@ public class ChessGame {
 
         //Get valid moves for the given piece, not including specific chess rules
         ChessPiece piece = board.getPiece(startPosition);
+
+        // No piece or not the team's turn
+        if (piece == null || piece.getTeamColor() != currentTeamTurn) {
+            return validMoves;
+        }
+
+        // Get possible moves for the piece
         Collection<ChessMove> pieceMoves = piece.pieceMoves(board,startPosition);
 
         //filter valid moves from pieceMoves
@@ -82,10 +89,8 @@ public class ChessGame {
 
             //eliminate pieceMoves if stalemate or something
 
-
             validMoves.add(move);
         }
-
         return validMoves;
     }
 
@@ -100,6 +105,11 @@ public class ChessGame {
         ChessPosition newPosition = move.getEndPosition();
         ChessPiece piece = board.getPiece(position);
 
+        // Ensure a piece exists at the start position
+        if (piece == null || piece.getTeamColor() != currentTeamTurn) {
+            throw new InvalidMoveException("No valid piece to move.");
+        }
+
         Collection<ChessMove> validMoves = validMoves(position);
 
         //throw Exception if move is not valid
@@ -107,13 +117,16 @@ public class ChessGame {
             throw new InvalidMoveException("Invalid Move, please try again");
         }
 
+
+
+
+
         for (ChessMove validMove : validMoves){
             if (validMove.getEndPosition().equals (newPosition)){
                 board.addPiece(position, null);
                 board.addPiece(newPosition, piece);
             }
         }
-
         currentTeamTurn = changeTeamTurn(currentTeamTurn);
     }
 
