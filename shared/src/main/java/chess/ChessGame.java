@@ -80,11 +80,16 @@ public class ChessGame {
                 continue;
             }
 
-            //skip move if it leaves king in check
+            //skip move if in check and move leaves king in check
             if (isInCheck(currentTeamTurn)){
                 if (doesMoveLeaveKingInCheck(move)){
                     continue;
                 }
+            }
+
+            //skip move if move puts king in check
+            if (doesMoveLeaveKingInCheck(move)){
+                continue;
             }
 
             //skip move if it moves kings too close together
@@ -254,35 +259,21 @@ public class ChessGame {
     }
 
     private boolean doesMoveLeaveKingInCheck(ChessMove move) {
-        // Create a temporary board and simulate move in question
-        ChessBoard tempBoard = board.copy();
-        tempBoard.addPiece(move.getEndPosition(), tempBoard.getPiece(move.getStartPosition())); // Move the piece
-        tempBoard.addPiece(move.getStartPosition(), null); // Remove it from old position
-
-        // create a temporary game to simulate the move
-        ChessGame tempGame = new ChessGame();
-        tempGame.setBoard(tempBoard);
-        tempGame.setTeamTurn(currentTeamTurn); // Preserve turn
+        //simulate the move on a temporary game and board
+        ChessGame tempGame = simulateMove(move);
 
         // Check if the move results in check
         if (tempGame.isInCheck(currentTeamTurn)) {
             return true; // Move is invalid
         }
-
         return false; // Move is valid
     }
 
 
     private boolean isKingTooCloseToEnemyKing(ChessMove move) {
-        //create a temporary board to simulate the move
-        ChessBoard tempBoard = board.copy();
-        tempBoard.addPiece(move.getEndPosition(), tempBoard.getPiece(move.getStartPosition())); // Move piece
-        tempBoard.addPiece(move.getStartPosition(), null); // Remove from old position
+        //simulate the move on a temporary game and board
+        ChessGame tempGame = simulateMove(move);
 
-        // Create a temp game state to check for check
-        ChessGame tempGame = new ChessGame();
-        tempGame.setBoard(tempBoard);
-        tempGame.setTeamTurn(currentTeamTurn); // Preserve turn
         // Get the enemy king's position
         ChessPosition enemyKingPosition = null;
         ChessPosition kingPosition = null;
@@ -290,7 +281,7 @@ public class ChessGame {
         //iterate through temp board to find king locations
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                ChessPiece piece = tempBoard.squares[row][col];
+                ChessPiece piece = tempGame.board.squares[row][col];
 
                 if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING &&
                         piece.getTeamColor() != currentTeamTurn) {
@@ -304,18 +295,43 @@ public class ChessGame {
         }
 
         // make sure our variable contains enemy king
-        if (enemyKingPosition == null) {
-            return false;
+        if (enemyKingPosition == null || kingPosition == null) {
+            return false; //TODO
         }
 
         //calculate distance between kings
         int rowDistanceBetweenKings = Math.abs(kingPosition.getRow() - enemyKingPosition.getRow());
         int columnDistanceBetweenKings = Math.abs(kingPosition.getRow() - enemyKingPosition.getRow());
+        System.out.println("row distance between kings: " + rowDistanceBetweenKings);
+        System.out.println("col distance between kings: " + columnDistanceBetweenKings);
 
-        if (rowDistanceBetweenKings <= 1 || columnDistanceBetweenKings <= 1) {
+        if (rowDistanceBetweenKings == 1 && columnDistanceBetweenKings == 1) {
             return true;
         }
         return false;
+    }
+
+    //creates temp chess board and game and simulates a move
+    public ChessGame simulateMove(ChessMove move){
+
+        // Create a temporary board and simulate move in question
+        ChessBoard tempBoard = board.copy();
+
+        //organize move details
+        ChessPosition position = move.getStartPosition();
+        ChessPosition newPosition = move.getEndPosition();
+        ChessPiece piece = tempBoard.getPiece(move.getStartPosition());
+
+        //make move on temporary board
+        tempBoard.addPiece(position, null); // remove old piece location
+        tempBoard.addPiece(newPosition, piece); // add new piece location
+
+        // create a temporary game to simulate the move
+        ChessGame tempGame = new ChessGame();
+        tempGame.setBoard(tempBoard);
+        tempGame.setTeamTurn(currentTeamTurn); // Preserve turn
+
+        return tempGame;
     }
 
     public static void main(String[] args) throws InvalidMoveException{
