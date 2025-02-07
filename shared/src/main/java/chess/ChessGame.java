@@ -68,7 +68,6 @@ public class ChessGame {
 
         //filter valid moves from pieceMoves
         for (ChessMove move : pieceMoves){
-            boolean isValid = true;
 
             //gain info about move
             ChessPosition movePosition = move.getStartPosition();
@@ -82,18 +81,18 @@ public class ChessGame {
 
             //skip move if in check and move leaves king in check
             if (isInCheck(currentTeamTurn)){
-                if (doesMoveLeaveKingInCheck(move)){
+                if (doesMoveLeaveKingInCheck(move, board)){
                     continue;
                 }
             }
 
             //skip move if move puts king in check
-            if (doesMoveLeaveKingInCheck(move)){
+            if (doesMoveLeaveKingInCheck(move, board)){
                 continue;
             }
 
             //skip move if it moves kings too close together
-            if (isKingTooCloseToEnemyKing(move)){
+            if (isKingTooCloseToEnemyKing(move, board)){
                 continue;
             }
 
@@ -163,23 +162,23 @@ public class ChessGame {
         for (int row = 0; row<8; row++) {
             for (int col = 0; col<8; col++) {
 
+                //info for current piece iteration
                 ChessPiece currentPiece = board.squares[row][col];
+                ChessPosition internalPosition = new ChessPosition(row, col);
+                ChessPosition position = board.toChessFormat(internalPosition);
 
                 // Skip empty squares
                 if (currentPiece == null) {
                     continue;
                 }
 
-                ChessPosition internalPosition = new ChessPosition(row, col);
-                ChessPosition position = board.toChessFormat(internalPosition);
-
                 //if currentPiece is an enemy, add their moves
                 if (currentPiece.getTeamColor() == enemyTeam) {
-                    Collection<ChessMove> validMoves = validMoves(position);
+                    Collection<ChessMove> enemyMoves = currentPiece.pieceMoves(board, position);
 
-                    //add each valid endposition to the enemyEndPositions array
-                    for (ChessMove validMove : validMoves) {
-                        enemyEndPositions.add(validMove.getEndPosition());
+                    //add each valid endPosition to the enemyEndPositions array
+                    for (ChessMove enemyMove : enemyMoves) {
+                        enemyEndPositions.add(enemyMove.getEndPosition());
                     }
                 }
 
@@ -258,9 +257,9 @@ public class ChessGame {
         return currentTeamTurn;
     }
 
-    private boolean doesMoveLeaveKingInCheck(ChessMove move) {
+    private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board) {
         //simulate the move on a temporary game and board
-        ChessGame tempGame = simulateMove(move);
+        ChessGame tempGame = simulateMove(move, board);
 
         // Check if the move results in check
         if (tempGame.isInCheck(currentTeamTurn)) {
@@ -270,13 +269,13 @@ public class ChessGame {
     }
 
 
-    private boolean isKingTooCloseToEnemyKing(ChessMove move) {
-        //simulate the move on a temporary game and board
-        ChessGame tempGame = simulateMove(move);
-
+    private boolean isKingTooCloseToEnemyKing(ChessMove move, ChessBoard board) {
         // Get the enemy king's position
         ChessPosition enemyKingPosition = null;
         ChessPosition kingPosition = null;
+
+        //simulate the move on a temporary game and board
+        ChessGame tempGame = simulateMove(move, board);
 
         //iterate through temp board to find king locations
         for (int row = 0; row < 8; row++) {
@@ -296,14 +295,15 @@ public class ChessGame {
 
         // make sure our variable contains enemy king
         if (enemyKingPosition == null || kingPosition == null) {
-            return false; //TODO
+            return false;
         }
 
         //calculate distance between kings
         int rowDistanceBetweenKings = Math.abs(kingPosition.getRow() - enemyKingPosition.getRow());
-        int columnDistanceBetweenKings = Math.abs(kingPosition.getRow() - enemyKingPosition.getRow());
-        System.out.println("row distance between kings: " + rowDistanceBetweenKings);
-        System.out.println("col distance between kings: " + columnDistanceBetweenKings);
+        int columnDistanceBetweenKings = Math.abs(kingPosition.getColumn() - enemyKingPosition.getColumn());
+
+//        System.out.println("row distance between kings: " + rowDistanceBetweenKings);
+//        System.out.println("col distance between kings: " + columnDistanceBetweenKings);
 
         if (rowDistanceBetweenKings == 1 && columnDistanceBetweenKings == 1) {
             return true;
@@ -312,7 +312,7 @@ public class ChessGame {
     }
 
     //creates temp chess board and game and simulates a move
-    public ChessGame simulateMove(ChessMove move){
+    public ChessGame simulateMove(ChessMove move, ChessBoard board){
 
         // Create a temporary board and simulate move in question
         ChessBoard tempBoard = board.copy();
@@ -333,6 +333,9 @@ public class ChessGame {
 
         return tempGame;
     }
+
+    //TODO
+    //public ChessPosition findKings()
 
     public static void main(String[] args) throws InvalidMoveException{
         ChessGame game = new ChessGame();
