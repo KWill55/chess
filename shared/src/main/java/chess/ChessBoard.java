@@ -38,6 +38,25 @@ public class ChessBoard {
         return true;
     }
 
+    public ChessBoard copy() {
+        ChessBoard newBoard = new ChessBoard(); // Create new board object
+
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                // Copy each piece (if not null)
+                if (this.squares[row][col] != null) {
+                    ChessPiece originalPiece = this.squares[row][col];
+
+                    // Manually create a new ChessPiece with the same attributes
+                    ChessPiece copiedPiece = new ChessPiece(originalPiece.getTeamColor(), originalPiece.getPieceType());
+
+                    newBoard.squares[row][col] = copiedPiece; // Place the copied piece in the new board
+                }
+            }
+        }
+        return newBoard;
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *

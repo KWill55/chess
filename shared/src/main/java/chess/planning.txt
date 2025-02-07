@@ -9,5 +9,18 @@ Things to Review:
 * constructors
 
 
+validMoves
+
+
+makeMove
+* move passed in
+* call validMoves() to check validMoves
+    inside validMoves:
+        * call pieceMoves to see valid Piece Moves
+        * if in check: dont let piece move unless getting out of check
+
+
+
+
 
 
