@@ -74,6 +74,14 @@ public class ChessGame {
                 continue;
             }
 
+            //eliminate pieceMoves if currentTeam currently in check
+            if (isInCheck(currentTeamTurn)){
+                isValid = false;
+                continue;
+            }
+
+            //eliminate pieceMoves if stalemate or something
+
 
             validMoves.add(move);
         }
@@ -116,19 +124,60 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+        ChessPosition kingPosition = null;
 
-        // Determine which team is the enemy team TODO maybe this isnt nececessary
-//        TeamColor enemyTeam;
-//        if (teamColor == ChessGame.TeamColor.BLACK){
-//            enemyTeam = ChessGame.TeamColor.WHITE;
-//        }
-//        else{
-//            enemyTeam = ChessGame.TeamColor.BLACK;
-//        }
+        //collection to store all the current valid enemy moves
+        Collection<ChessPosition> enemyEndPositions = new ArrayList<>();
 
-        //go through the board to see if any enemyPieces put teamColor in check
+        // Determine which team is the enemy team
+        TeamColor enemyTeam;
+        if (teamColor == ChessGame.TeamColor.BLACK) {
+            enemyTeam = ChessGame.TeamColor.WHITE;
+        } else {
+            enemyTeam = ChessGame.TeamColor.BLACK;
+        }
 
-        throw new RuntimeException("Not implemented");
+        //iterate through the board, stop at enemy piece, and add their validMoves to enemyMoves array
+        for (int row = 0; row<8; row++) {
+            for (int col = 0; col<8; col++) {
+
+                ChessPiece currentPiece = board.squares[row][col];
+
+                // Skip empty squares
+                if (currentPiece == null) {
+                    continue;
+                }
+
+                ChessPosition internalPosition = new ChessPosition(row, col);
+                ChessPosition position = board.toChessFormat(internalPosition);
+
+                //if currentPiece is an enemy, add their moves
+                if (currentPiece.getTeamColor() == enemyTeam) {
+                    Collection<ChessMove> validMoves = validMoves(position);
+
+                    //add each valid endposition to the enemyEndPositions array
+                    for (ChessMove validMove : validMoves) {
+                        enemyEndPositions.add(validMove.getEndPosition());
+                    }
+                }
+
+                //find our teamColor's King and get his endPosition
+                if ((currentPiece.getPieceType() == ChessPiece.PieceType.KING) && (currentPiece.getTeamColor() == teamColor)) {
+                    ChessPosition internalKingPosition = new ChessPosition(row,col);
+                    kingPosition = board.toChessFormat(internalKingPosition);
+                }
+            }
+        }
+
+        //if an enemy can capture teamColor's KING, return true (king is in check)
+        if (kingPosition != null){
+            if (enemyEndPositions.contains(kingPosition)) {
+                return true;
+            }
+        }
+
+        //king is not in check
+        return false;
     }
 
     /**
