@@ -57,14 +57,17 @@ public class ChessGame {
 
         //Get valid moves for the given piece, not including specific chess rules
         ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) return validMoves;
 
-        // No piece or not the team's turn
-        if (piece == null || piece.getTeamColor() != currentTeamTurn) {
-            return validMoves;
-        }
 
         // Get possible moves for the piece
         Collection<ChessMove> pieceMoves = piece.pieceMoves(board,startPosition);
+
+        //check for pinned move
+        if (isPiecePinned(startPosition, board)) {
+            System.out.println("Piece at " + startPosition + " is pinned and cannot move freely.");
+            return validMoves;  // Return an empty list, since a fully pinned piece has no moves
+        }
 
         //filter valid moves from pieceMoves
         for (ChessMove move : pieceMoves){
@@ -73,11 +76,6 @@ public class ChessGame {
             ChessPosition movePosition = move.getStartPosition();
             ChessPosition newMovePosition = move.getEndPosition();
             ChessPiece movePiece = board.getPiece(movePosition);
-
-            //skip move if start piece is an enemy
-            if (movePiece.getTeamColor() != currentTeamTurn){
-                continue;
-            }
 
             //skip move if in check and move leaves king in check
             if (isInCheck(currentTeamTurn)){
@@ -102,6 +100,8 @@ public class ChessGame {
             //Its made it this far, so its a valid move
             validMoves.add(move);
         }
+
+        System.out.println("Valid moves for " + startPosition + ": " + validMoves);
         return validMoves;
     }
 
@@ -201,6 +201,64 @@ public class ChessGame {
         return false;
     }
 
+    public boolean isInCheck(TeamColor teamColor, ChessBoard board) {
+        ChessPosition kingPosition = null;
+
+        //collection to store all the current valid enemy moves
+        Collection<ChessPosition> enemyEndPositions = new ArrayList<>();
+
+        // Determine which team is the enemy team
+        TeamColor enemyTeam;
+        if (teamColor == ChessGame.TeamColor.BLACK) {
+            enemyTeam = ChessGame.TeamColor.WHITE;
+        } else {
+            enemyTeam = ChessGame.TeamColor.BLACK;
+        }
+
+        //iterate through the board, stop at enemy piece, and add their validMoves to enemyMoves array
+        for (int row = 0; row<8; row++) {
+            for (int col = 0; col<8; col++) {
+
+                //info for current piece iteration
+                ChessPiece currentPiece = board.squares[row][col];
+                ChessPosition internalPosition = new ChessPosition(row, col);
+                ChessPosition position = board.toChessFormat(internalPosition);
+
+                // Skip empty squares
+                if (currentPiece == null) {
+                    continue;
+                }
+
+                //if currentPiece is an enemy, add their moves
+                if (currentPiece.getTeamColor() == enemyTeam) {
+                    Collection<ChessMove> enemyMoves = currentPiece.pieceMoves(board, position);
+
+                    //add each valid endPosition to the enemyEndPositions array
+                    for (ChessMove enemyMove : enemyMoves) {
+                        enemyEndPositions.add(enemyMove.getEndPosition());
+                    }
+                }
+
+                //find our teamColor's King and get his endPosition
+                if ((currentPiece.getPieceType() == ChessPiece.PieceType.KING) && (currentPiece.getTeamColor() == teamColor)) {
+                    ChessPosition internalKingPosition = new ChessPosition(row,col);
+                    kingPosition = board.toChessFormat(internalKingPosition);
+                }
+            }
+        }
+
+        //if an enemy can capture teamColor's KING, return true (king is in check)
+        if (kingPosition != null){
+            if (enemyEndPositions.contains(kingPosition)) {
+                return true;
+            }
+        }
+
+        //king is not in check
+        return false;
+    }
+
+
     /**
      * Determines if the given team is in checkmate
      *
@@ -258,14 +316,32 @@ public class ChessGame {
     }
 
     private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board) {
+
+        //organize move details
+        ChessPosition position = move.getStartPosition();
+
         //simulate the move on a temporary game and board
         ChessGame tempGame = simulateMove(move, board);
 
-        // Check if the move results in check
-        if (tempGame.isInCheck(currentTeamTurn)) {
-            return true; // Move is invalid
+
+        // Check if the move results in check and return answer
+        boolean kingInCheck = tempGame.isInCheck(currentTeamTurn);
+
+        //checks to se if piece is pinned
+        if (isPiecePinned(position, board)) {
+           tempGame = simulateMove(move, board);
+            if (!tempGame.isInCheck(currentTeamTurn)) {
+                return false;
+            }
+            System.out.println("Move blocked: " + move + " (Piece is pinned and does NOT block check)");
+            return true;
         }
-        return false; // Move is valid
+
+
+        System.out.println("Testing move: " + move);
+        System.out.println("King is in check after move? " + kingInCheck);
+
+        return kingInCheck;
     }
 
 
@@ -278,20 +354,9 @@ public class ChessGame {
         ChessGame tempGame = simulateMove(move, board);
 
         //iterate through temp board to find king locations
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                ChessPiece piece = tempGame.board.squares[row][col];
-
-                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING &&
-                        piece.getTeamColor() != currentTeamTurn) {
-                    enemyKingPosition = new ChessPosition(row, col);
-                }
-                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING &&
-                        piece.getTeamColor() == currentTeamTurn) {
-                    kingPosition = new ChessPosition(row, col);
-                }
-            }
-        }
+        kingPosition = findKing(tempGame.board, currentTeamTurn);
+        TeamColor enemyTeam = (currentTeamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+        enemyKingPosition = findKing(tempGame.board,  enemyTeam);
 
         // make sure our variable contains enemy king
         if (enemyKingPosition == null || kingPosition == null) {
@@ -301,9 +366,6 @@ public class ChessGame {
         //calculate distance between kings
         int rowDistanceBetweenKings = Math.abs(kingPosition.getRow() - enemyKingPosition.getRow());
         int columnDistanceBetweenKings = Math.abs(kingPosition.getColumn() - enemyKingPosition.getColumn());
-
-//        System.out.println("row distance between kings: " + rowDistanceBetweenKings);
-//        System.out.println("col distance between kings: " + columnDistanceBetweenKings);
 
         if (rowDistanceBetweenKings == 1 && columnDistanceBetweenKings == 1) {
             return true;
@@ -334,8 +396,44 @@ public class ChessGame {
         return tempGame;
     }
 
-    //TODO
-    //public ChessPosition findKings()
+    public ChessPosition findKing(ChessBoard board, TeamColor teamColor){
+        ChessPosition kingPosition = null;
+
+        //iterate through the board to find the king location
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPiece piece = board.squares[row][col];
+
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING &&
+                        piece.getTeamColor() == teamColor) {
+                    kingPosition = new ChessPosition(row, col);
+                }
+            }
+        }
+        return kingPosition;
+    }
+
+    private boolean isPiecePinned(ChessPosition position, ChessBoard board){
+        ChessPiece piece = board.getPiece(position);
+
+        if (piece == null) {
+            return false;
+        }
+
+        ChessPosition kingPosition = findKing(board, piece.getTeamColor());
+
+        if (kingPosition == null) {
+            return false;
+        }
+
+        //simulate board and remove piece
+        ChessBoard tempBoard = board.copy();
+        tempBoard.addPiece(position, null); // Remove the piece
+
+        // If the king is now in check, the piece was pinned
+        return isInCheck(piece.getTeamColor(), tempBoard);
+
+    }
 
     public static void main(String[] args) throws InvalidMoveException{
         ChessGame game = new ChessGame();
