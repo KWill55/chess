@@ -108,9 +108,11 @@ public class PawnMovesCalculator implements PieceMovesCalculator{
 
             ChessPosition newInternalPosition = new ChessPosition(internalRow, internalCol);
             ChessPosition newPosition = board.toChessFormat(newInternalPosition);
+
             if(!board.isWithinBounds(newPosition)){
-                break;
+                continue;
             }
+
             ChessPiece newPiece = board.getPiece(newPosition);
             ChessMove move = new ChessMove(position, newPosition, null);
 

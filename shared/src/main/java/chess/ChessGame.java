@@ -63,12 +63,6 @@ public class ChessGame {
         // Get possible moves for the piece
         Collection<ChessMove> pieceMoves = piece.pieceMoves(board,startPosition);
 
-        //check for pinned move
-        if (isPiecePinned(startPosition, board)) {
-            System.out.println("Piece at " + startPosition + " is pinned and cannot move freely.");
-            return validMoves;  // Return an empty list, since a fully pinned piece has no moves
-        }
-
         //filter valid moves from pieceMoves
         for (ChessMove move : pieceMoves){
 
@@ -79,20 +73,21 @@ public class ChessGame {
 
             //skip move if in check and move leaves king in check
             if (isInCheck(currentTeamTurn)){
-                if (doesMoveLeaveKingInCheck(move, board)){
+                if (doesMoveLeaveKingInCheck(move, board, currentTeamTurn)){
                     continue;
                 }
             }
 
             //skip move if move puts king in check
-            if (doesMoveLeaveKingInCheck(move, board)){
+            if (doesMoveLeaveKingInCheck(move, board, currentTeamTurn)){
                 continue;
             }
 
             //skip move if it moves kings too close together
-            if (isKingTooCloseToEnemyKing(move, board)){
-                continue;
-            }
+//            if (isKingTooCloseToEnemyKing(move, board)){
+//                continue;
+//            }
+
 
             //skip moves if stalemate/checkmate? maybe not
             //TODO
@@ -229,13 +224,12 @@ public class ChessGame {
                     continue;
                 }
 
-                //if currentPiece is an enemy, add their moves
+                //if currentPiece is an enemy, add their moves to the enemyEndPositions array
                 if (currentPiece.getTeamColor() == enemyTeam) {
-                    Collection<ChessMove> enemyMoves = currentPiece.pieceMoves(board, position);
-
-                    //add each valid endPosition to the enemyEndPositions array
-                    for (ChessMove enemyMove : enemyMoves) {
-                        enemyEndPositions.add(enemyMove.getEndPosition());
+                    System.out.println("Piece to find moves for: " + currentPiece);
+                    Collection<ChessMove> enemyPieceMoves = currentPiece.pieceMoves(board, position);
+                    for (ChessMove enemyPieceMove : enemyPieceMoves) {
+                        enemyEndPositions.add(enemyPieceMove.getEndPosition());
                     }
                 }
 
@@ -243,6 +237,7 @@ public class ChessGame {
                 if ((currentPiece.getPieceType() == ChessPiece.PieceType.KING) && (currentPiece.getTeamColor() == teamColor)) {
                     ChessPosition internalKingPosition = new ChessPosition(row,col);
                     kingPosition = board.toChessFormat(internalKingPosition);
+                    System.out.println(teamColor + " king Position: " + kingPosition);
                 }
             }
         }
@@ -315,33 +310,42 @@ public class ChessGame {
         return currentTeamTurn;
     }
 
-    private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board) {
+    private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board, TeamColor teamColor) {
+        //create temporary board to see how move affects check
+        ChessGame tempGame = createTempGame(board);
 
-        //organize move details
-        ChessPosition position = move.getStartPosition();
+        System.out.println("\nTesting move: " + move);
+        System.out.println("Board after move");
+        tempGame.board.drawBoard();
 
-        //simulate the move on a temporary game and board
-        ChessGame tempGame = simulateMove(move, board);
+        //no out of bounds error when both checks are calculated with enemyTeam
+//        boolean isEnemyKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
+//        boolean isKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
 
+        //out of bounds when i use temGame.currentTeamTurn and enemyTeam
+//        boolean isKingInCheck = tempGame.isInCheck(tempGame.currentTeamTurn, tempGame.board);
+//        boolean isEnemyKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
 
-        // Check if the move results in check and return answer
-        boolean kingInCheck = tempGame.isInCheck(currentTeamTurn);
+        //not out of bounds when i use tempGame.currentTeamTurn for both
+//        boolean isKingInCheck = tempGame.isInCheck(tempGame.currentTeamTurn, tempGame.board);
+//        boolean isEnemyKingInCheck = tempGame.isInCheck(tempGame.currentTeamTurn, tempGame.board);
 
-        //checks to se if piece is pinned
-        if (isPiecePinned(position, board)) {
-           tempGame = simulateMove(move, board);
-            if (!tempGame.isInCheck(currentTeamTurn)) {
-                return false;
-            }
-            System.out.println("Move blocked: " + move + " (Piece is pinned and does NOT block check)");
-            return true;
-        }
+        //out of bounds error when i try to use this.currentTeamTurn and enemyTeam
+//        boolean isKingInCheck = tempGame.isInCheck(this.currentTeamTurn, tempGame.board);
+//        boolean isEnemyKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
 
+        TeamColor enemyTeam = teamColor;
+        TeamColor friendlyTeam = (enemyTeam == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+        //TODO this is the problem. enemyTeam is making everything not work
 
-        System.out.println("Testing move: " + move);
-        System.out.println("King is in check after move? " + kingInCheck);
+        boolean isKingInCheck = tempGame.isInCheck(friendlyTeam, tempGame.board);
+        boolean isEnemyKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
 
-        return kingInCheck;
+        System.out.println("Is King in check after move? " + isKingInCheck);
+        System.out.println("Is enemy king in check after move? " + isEnemyKingInCheck);
+
+        //return whether one of the kings is in check or not
+        return isKingInCheck || isEnemyKingInCheck;
     }
 
 
@@ -373,6 +377,21 @@ public class ChessGame {
         return false;
     }
 
+    public ChessGame createTempGame(ChessBoard board) {
+        // Create a temporary board copy
+        ChessBoard tempBoard = board.copy();
+
+        // Create a temporary game with the copied board
+        ChessGame tempGame = new ChessGame();
+        tempGame.setBoard(tempBoard);
+        tempGame.setTeamTurn(currentTeamTurn); // Preserve turn
+
+        return tempGame;
+    }
+
+
+
+
     //creates temp chess board and game and simulates a move
     public ChessGame simulateMove(ChessMove move, ChessBoard board){
 
@@ -383,6 +402,16 @@ public class ChessGame {
         ChessPosition position = move.getStartPosition();
         ChessPosition newPosition = move.getEndPosition();
         ChessPiece piece = tempBoard.getPiece(move.getStartPosition());
+
+        if (piece == null) {
+            return null; // No piece to move (should never happen in valid moves)
+        }
+
+        // Ensure the move is valid by checking pieceMoves()
+        Collection<ChessMove> pieceMoves = piece.pieceMoves(board, position);
+        if (!pieceMoves.contains(move)) {
+            return null; // Move is invalid, return null (or throw an exception)
+        }
 
         //make move on temporary board
         tempBoard.addPiece(position, null); // remove old piece location
@@ -413,6 +442,7 @@ public class ChessGame {
         return kingPosition;
     }
 
+    //maybe get rid of this
     private boolean isPiecePinned(ChessPosition position, ChessBoard board){
         ChessPiece piece = board.getPiece(position);
 
@@ -431,7 +461,7 @@ public class ChessGame {
         tempBoard.addPiece(position, null); // Remove the piece
 
         // If the king is now in check, the piece was pinned
-        return isInCheck(piece.getTeamColor(), tempBoard);
+        return isInCheck(piece.getTeamColor());
 
     }
 
