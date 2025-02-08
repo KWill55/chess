@@ -140,22 +140,16 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+
         ChessPosition kingPosition = null;
+        TeamColor enemyTeamColor = (teamColor == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
         //collection to store all the current valid enemy moves
         Collection<ChessPosition> enemyEndPositions = new ArrayList<>();
 
-        // Determine which team is the enemy team
-        TeamColor enemyTeam;
-        if (teamColor == ChessGame.TeamColor.BLACK) {
-            enemyTeam = ChessGame.TeamColor.WHITE;
-        } else {
-            enemyTeam = ChessGame.TeamColor.BLACK;
-        }
-
         //iterate through the board, stop at enemy piece, and add their validMoves to enemyMoves array
-        for (int row = 0; row<8; row++) {
-            for (int col = 0; col<8; col++) {
+        for (int row = 0; row<board.squares.length; row++) {
+            for (int col = 0; col<board.squares.length; col++) {
 
                 //info for current piece iteration
                 ChessPiece currentPiece = board.squares[row][col];
@@ -168,7 +162,7 @@ public class ChessGame {
                 }
 
                 //if currentPiece is an enemy, add their moves
-                if (currentPiece.getTeamColor() == enemyTeam) {
+                if (currentPiece.getTeamColor() == enemyTeamColor) {
                     Collection<ChessMove> enemyMoves = currentPiece.pieceMoves(board, position);
 
                     //add each valid endPosition to the enemyEndPositions array
@@ -185,7 +179,7 @@ public class ChessGame {
             }
         }
 
-        //if an enemy can capture teamColor's KING, return true (king is in check)
+        //king is in check
         if (kingPosition != null){
             if (enemyEndPositions.contains(kingPosition)) {
                 return true;
@@ -198,21 +192,14 @@ public class ChessGame {
 
     public boolean isInCheck(TeamColor teamColor, ChessBoard board) {
         ChessPosition kingPosition = null;
+        TeamColor enemyTeamColor = (teamColor == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
         //collection to store all the current valid enemy moves
         Collection<ChessPosition> enemyEndPositions = new ArrayList<>();
 
-        // Determine which team is the enemy team
-        TeamColor enemyTeam;
-        if (teamColor == ChessGame.TeamColor.BLACK) {
-            enemyTeam = ChessGame.TeamColor.WHITE;
-        } else {
-            enemyTeam = ChessGame.TeamColor.BLACK;
-        }
-
         //iterate through the board, stop at enemy piece, and add their validMoves to enemyMoves array
-        for (int row = 0; row<8; row++) {
-            for (int col = 0; col<8; col++) {
+        for (int row = 0; row < board.squares.length; row++) {
+            for (int col = 0; col < board.squares.length; col++) {
 
                 //info for current piece iteration
                 ChessPiece currentPiece = board.squares[row][col];
@@ -224,26 +211,26 @@ public class ChessGame {
                     continue;
                 }
 
-                //if currentPiece is an enemy, add their moves to the enemyEndPositions array
-                if (currentPiece.getTeamColor() == enemyTeam) {
-                    System.out.println("Piece to find moves for: " + currentPiece);
-                    Collection<ChessMove> enemyPieceMoves = currentPiece.pieceMoves(board, position);
-                    for (ChessMove enemyPieceMove : enemyPieceMoves) {
-                        enemyEndPositions.add(enemyPieceMove.getEndPosition());
+                //if currentPiece is an enemy, add their moves
+                if (currentPiece.getTeamColor() == enemyTeamColor) {
+                    Collection<ChessMove> enemyMoves = currentPiece.pieceMoves(board, position);
+
+                    //add each valid endPosition to the enemyEndPositions array
+                    for (ChessMove enemyMove : enemyMoves) {
+                        enemyEndPositions.add(enemyMove.getEndPosition());
                     }
                 }
 
                 //find our teamColor's King and get his endPosition
                 if ((currentPiece.getPieceType() == ChessPiece.PieceType.KING) && (currentPiece.getTeamColor() == teamColor)) {
-                    ChessPosition internalKingPosition = new ChessPosition(row,col);
+                    ChessPosition internalKingPosition = new ChessPosition(row, col);
                     kingPosition = board.toChessFormat(internalKingPosition);
-                    System.out.println(teamColor + " king Position: " + kingPosition);
                 }
             }
         }
 
-        //if an enemy can capture teamColor's KING, return true (king is in check)
-        if (kingPosition != null){
+        //king is in check
+        if (kingPosition != null) {
             if (enemyEndPositions.contains(kingPosition)) {
                 return true;
             }
@@ -310,36 +297,32 @@ public class ChessGame {
         return currentTeamTurn;
     }
 
+    /*
+    determines whether a move results in a king being in check by simulating move on a temporary board
+     */
     private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board, TeamColor teamColor) {
-        //create temporary board to see how move affects check
+        //create temporary board to test move in
         ChessGame tempGame = createTempGame(board);
 
+        //temporary comments
         System.out.println("\nTesting move: " + move);
         System.out.println("Board after move");
         tempGame.board.drawBoard();
 
-        //no out of bounds error when both checks are calculated with enemyTeam
-//        boolean isEnemyKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
-//        boolean isKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
+        //organize move details
+        ChessPosition position = move.getStartPosition();
+        ChessPosition newPosition = move.getEndPosition();
+        ChessPiece piece = tempGame.board.getPiece(move.getStartPosition());
 
-        //out of bounds when i use temGame.currentTeamTurn and enemyTeam
-//        boolean isKingInCheck = tempGame.isInCheck(tempGame.currentTeamTurn, tempGame.board);
-//        boolean isEnemyKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
+        //make move on the temporary board
+        tempGame.board.addPiece(position, null); // remove old piece location
+        tempGame.board.addPiece(newPosition, piece); // add new piece location
+        //change team turn
+        TeamColor newTeamColor = (teamColor == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+        TeamColor newEnemyTeamColor = (newTeamColor == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
-        //not out of bounds when i use tempGame.currentTeamTurn for both
-//        boolean isKingInCheck = tempGame.isInCheck(tempGame.currentTeamTurn, tempGame.board);
-//        boolean isEnemyKingInCheck = tempGame.isInCheck(tempGame.currentTeamTurn, tempGame.board);
-
-        //out of bounds error when i try to use this.currentTeamTurn and enemyTeam
-//        boolean isKingInCheck = tempGame.isInCheck(this.currentTeamTurn, tempGame.board);
-//        boolean isEnemyKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
-
-        TeamColor enemyTeam = teamColor;
-        TeamColor friendlyTeam = (enemyTeam == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
-        //TODO this is the problem. enemyTeam is making everything not work
-
-        boolean isKingInCheck = tempGame.isInCheck(friendlyTeam, tempGame.board);
-        boolean isEnemyKingInCheck = tempGame.isInCheck(enemyTeam, tempGame.board);
+        boolean isKingInCheck = tempGame.isInCheck(newTeamColor, tempGame.board);
+        boolean isEnemyKingInCheck = tempGame.isInCheck(newEnemyTeamColor, tempGame.board);
 
         System.out.println("Is King in check after move? " + isKingInCheck);
         System.out.println("Is enemy king in check after move? " + isEnemyKingInCheck);
