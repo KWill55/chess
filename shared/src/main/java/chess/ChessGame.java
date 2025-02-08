@@ -61,6 +61,11 @@ public class ChessGame {
             return validMoves;
         }
 
+        //dont accept moves for a fully pinned piece
+        if (isPieceCompletelyPinned(startPosition, board)) {
+            return validMoves; // Return empty move set
+        }
+
 
         // Get possible moves for the piece
         Collection<ChessMove> pieceMoves = piece.pieceMoves(board, startPosition);
@@ -81,8 +86,6 @@ public class ChessGame {
             //Its made it this far, so it's a valid move
             validMoves.add(move);
         }
-
-        System.out.println("Valid moves for " + startPosition + ": " + validMoves);
         return validMoves;
     }
 
@@ -112,7 +115,7 @@ public class ChessGame {
         for (ChessMove validMove : validMoves) {
             if (validMove.getEndPosition().equals(newPosition)) {
                 if (move.getPromotionPiece() != null) {
-                    // Create the promoted piece instead of moving the pawn
+                    // promotion pawn
                     ChessPiece promotedPiece = new ChessPiece(currentTeamTurn, move.getPromotionPiece());
                     board.addPiece(position, null); // Remove the pawn
                     board.addPiece(newPosition, promotedPiece); // Place the new piece
@@ -123,6 +126,7 @@ public class ChessGame {
                 }
             }
         }
+        //change player turns
         currentTeamTurn = getOtherTeamColor(currentTeamTurn);
     }
 
@@ -242,7 +246,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        // If the team is NOT in check, it's not checkmate
+        // If the team is not in check, it's not checkmate
         if (!isInCheck(teamColor)) {
             return false;
         }
@@ -351,10 +355,9 @@ public class ChessGame {
         return (currentTeamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
-    /*
+    /**
     determines whether a move results in a king being in check by simulating move on a temporary board
-     */
-
+     **/
     private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board, TeamColor teamColor) {
         System.out.println("\nTesting move: " + move);
 
@@ -373,37 +376,6 @@ public class ChessGame {
 
         return isInCheck(teamColor, tempBoard);
     }
-
-//    private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board, TeamColor teamColor) {
-//        //create temporary board to test move in
-//        ChessGame tempGame = createTempGame(board);
-//
-//        //temporary comments
-//        System.out.println("\nTesting move: " + move);
-//
-//        //organize move details
-//        ChessPosition position = move.getStartPosition();
-//        ChessPosition newPosition = move.getEndPosition();
-//        ChessPiece piece = tempGame.board.getPiece(move.getStartPosition());
-//
-//        //make move on the temporary board
-//        tempGame.board.addPiece(position, null); // remove old piece location
-//        tempGame.board.addPiece(newPosition, piece); // add new piece location
-//
-//        //change team turn
-//
-//        TeamColor newTeamColor = getOtherTeamColor(teamColor);
-//
-//        System.out.println("Board after move");
-//        tempGame.board.drawBoard();
-//
-//        boolean isKingInCheck = tempGame.isInCheck(teamColor, tempGame.board);
-//
-//        System.out.println(teamColor + " is in check? " + isKingInCheck);
-//
-//        //return whether one of the kings is in check or not
-//        return isKingInCheck;
-//    }
 
     public ChessGame createTempGame(ChessBoard board) {
         // Create a temporary board copy
@@ -432,5 +404,24 @@ public class ChessGame {
             }
         }
         return kingPosition;
+    }
+
+    private boolean isPieceCompletelyPinned(ChessPosition position, ChessBoard board) {
+        ChessPiece piece = board.getPiece(position);
+        ChessPosition kingPosition = findKing(board, piece.getTeamColor());
+
+        // Get all possible moves for this piece
+        Collection<ChessMove> possibleMoves = piece.pieceMoves(board, position);
+
+        // Check if any move does not leave the king in check
+        for (ChessMove move : possibleMoves) {
+            // Found at least one valid move, so it's not completely pinned
+            if (!doesMoveLeaveKingInCheck(move, board, piece.getTeamColor())) {
+                return false;
+            }
+        }
+
+        // If no valid moves exist, the piece is completely pinned
+        return true;
     }
 }
