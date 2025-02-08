@@ -2,7 +2,6 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Scanner;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -57,7 +56,10 @@ public class ChessGame {
 
         //Get valid moves for the given piece, not including specific chess rules
         ChessPiece piece = board.getPiece(startPosition);
-        if (piece == null) return validMoves;
+
+        if (piece == null){
+            return validMoves;
+        }
 
 
         // Get possible moves for the piece
@@ -71,24 +73,16 @@ public class ChessGame {
             ChessPosition newMovePosition = move.getEndPosition();
             ChessPiece movePiece = board.getPiece(movePosition);
 
-
-            TeamColor notCurrentTeamTurn = getOtherTeamColor(currentTeamTurn);
-
             //skip move if move puts currentTeamTurn king in check
-            System.out.println(currentTeamTurn);
             if (doesMoveLeaveKingInCheck(move, board, currentTeamTurn)) {
                 continue;
             }
-
-//            if (isPiecePinned(move.getStartPosition(),board)){
-//                continue;
-//            }
 
             //Its made it this far, so it's a valid move
             validMoves.add(move);
         }
 
-//        System.out.println("Valid moves for " + startPosition + ": " + validMoves);
+        System.out.println("Valid moves for " + startPosition + ": " + validMoves);
         return validMoves;
     }
 
@@ -362,6 +356,8 @@ public class ChessGame {
      */
 
     private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board, TeamColor teamColor) {
+        System.out.println("\nTesting move: " + move);
+
         ChessBoard tempBoard = board.copy();
         ChessPosition position = move.getStartPosition();
         ChessPosition newPosition = move.getEndPosition();
@@ -370,6 +366,10 @@ public class ChessGame {
         // Simulate the move on the temporary board
         tempBoard.addPiece(position, null); // remove old piece location
         tempBoard.addPiece(newPosition, piece); // add new piece location
+
+        System.out.println("Board after move");
+        tempBoard.drawBoard();
+        System.out.println(teamColor + " is in check? " + isInCheck(teamColor, tempBoard));
 
         return isInCheck(teamColor, tempBoard);
     }
@@ -432,33 +432,5 @@ public class ChessGame {
             }
         }
         return kingPosition;
-    }
-
-    public static void main(String[] args) throws InvalidMoveException{
-        ChessGame game = new ChessGame();
-        Scanner scanner = new Scanner(System.in);
-
-        while (true){
-            game.board.drawBoard();
-            System.out.println("Current Team Turn: " + game.currentTeamTurn);
-
-            System.out.println("Pick starting piece");
-            int startRow = scanner.nextInt();
-            int startCol = scanner.nextInt();
-            ChessPosition position = new ChessPosition(startRow, startCol);
-
-
-            System.out.println("Pick ending location");
-            int endRow = scanner.nextInt();
-            int endCol = scanner.nextInt();
-            ChessPosition newPosition = new ChessPosition(endRow,endCol);
-
-            ChessMove move = new ChessMove(position, newPosition, null);
-
-            game.makeMove(move);
-        }
-
-
-
     }
 }
