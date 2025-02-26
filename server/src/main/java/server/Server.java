@@ -8,6 +8,7 @@ import model.LoginResponse;
 //import server.websocket.WebSocketHandler;
 import service.UserService;
 import service.AuthService;
+import service.GameService;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class Server {
     private final UserService userService;
     private final AuthService authService;
+    private final GameService gameService;
 
     public Server() {
         UserDAO userDAO = new UserDAO();
@@ -25,6 +27,7 @@ public class Server {
 
         this.userService = new UserService(userDAO, authDAO);
         this.authService = new AuthService(authDAO, userDAO);
+        this.gameService = new GameService()
     }
 
     // Constructor with dependencies (for flexibility in other use cases)
@@ -32,6 +35,7 @@ public class Server {
     public Server(UserService userService, AuthService authService) {
         this.userService = userService;
         this.authService = authService;
+        this.gameService = gameService;
     }
 
     public int run(int desiredPort) {
@@ -47,7 +51,7 @@ public class Server {
 //        Spark.get("/game", this::listGames); //for listing games
 //        Spark.post("/game", this::createGame); //for creating a game
 //        Spark.put("/game", this::joinGame); //for joining a game
-//        Spark.delete("/db", this::clear); //for clearing application
+        Spark.delete("/db", this::clear); //for clearing application
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -92,6 +96,19 @@ public class Server {
         } catch (DataAccessException e) {
             res.status(401); // Unauthorized
             return gson.toJson(Map.of("message", "Error: Unauthorized"));
+        }
+    }
+
+    private Object clear(Request req, Response res) {
+        try {
+            userService.clearAll();
+            authService.clearAll();
+            gameService.clearAll();
+            res.status(200);
+            return gson.toJson(Map.of("message", "Database cleared"));
+        } catch (Exception e) {
+            res.status(500);
+            return gson.toJson(Map.of("message", "Error: Could not clear database"));
         }
     }
 }
