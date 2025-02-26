@@ -9,6 +9,11 @@ public class UserDAO {
     // Temporary database structure (until SQL is implemented)
     private final Map<String, UserData> users = new HashMap<>();
 
+    public UserDAO(){
+        users.put("Kenny", new UserData("Kenny", "password", "kenny@email.com"));
+        System.out.println("Preloaded user: Kenny (password: password)");
+    }
+
     /**
      * Creates a new user in the database.
      * @param user The UserData object containing user details.
@@ -41,6 +46,7 @@ public class UserDAO {
                 System.out.println("DEBUG: User not found: " + username);
                 throw new DataAccessException("Error: Username cannot be null");
             }
+            System.out.println("Returning userData for " + username + " to AuthService");
             return users.get(username);
         } catch (Exception e) {
             System.out.println("DEBUG: Unable to retrieve user: " + username);

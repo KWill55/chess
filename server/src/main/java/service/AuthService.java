@@ -27,7 +27,22 @@ public class AuthService {
     public LoginResponse login(LoginRequest request) throws DataAccessException {
         try {
             UserData user = userDAO.getUser(request.username());
-            // If user doesn't exist OR password is incorrect, throw an exception
+
+            if (user == null) {
+                System.out.println("DEBUG: User not found in database for username: " + request.username());
+                throw new DataAccessException("Error: Unauthorized");
+            }
+
+
+            System.out.println("Password from user request is " + request.password());
+            if (user.username() != null){
+                System.out.println("Password from userDAO for " + user.username() + " is " + user.password());
+            }
+            else{
+                System.out.println("User.username() is null");
+            }
+
+
             if (!user.password().equals(request.password())) {
                 throw new DataAccessException("Error: Unauthorized");
             }
