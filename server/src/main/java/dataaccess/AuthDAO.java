@@ -40,4 +40,8 @@ public class AuthDAO {
         }
         authTokenMap.remove(authToken);
     }
+
+    public void clear() {
+        authTokenMap.clear();
+    }
 }

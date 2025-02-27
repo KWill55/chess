@@ -11,4 +11,8 @@ public class GameDAO {
     //updateGame()
     //getGame()
 
+
+    public void clear() {
+    }
+
 }

@@ -3,8 +3,6 @@ package service;
 
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
-import model.LoginRequest;
-import model.LoginResponse;
 import model.RegisterRequest;
 import model.RegisterResponse;
 import model.UserData;
@@ -34,14 +32,25 @@ public class UserService {
         }
 
         // Create and store new user
-        UserData newUser = new UserData(request.username(), request.password(), request.email());
-        userDAO.createUser(newUser);
+        UserData newUserData = new UserData(request.username(), request.password(), request.email());
+        userDAO.createUser(newUserData);
 
-        return new RegisterResponse(request.username());
+        //TODO do i need to create a new authToken when registering?
+        //create and store new authToken
+        String authToken = UUID.randomUUID().toString();
+        AuthData newAuthData = new AuthData(authToken, newUserData.username());
+        authDAO.createAuth(newAuthData);
+
+        return new RegisterResponse(newUserData.username(),newAuthData.authToken());
     }
 
 
     public UserData getUser(String username) throws DataAccessException {
         return userDAO.getUser(username);
     }
+
+    public void clearAll() throws DataAccessException {
+        userDAO.clear();  // Clears all user data
+    }
+
 }

@@ -69,4 +69,9 @@ public class AuthService {
             return false;
         }
     }
+
+    public void clearAll() throws DataAccessException {
+        authDAO.clear();  // Clears all authentication tokens
+    }
+
 }
