@@ -41,9 +41,12 @@ public class UserService {
         AuthData newAuthData = new AuthData(authToken, newUserData.username());
         authDAO.createAuth(newAuthData);
 
+        System.out.println("Just added a new person. Now all the users are: ");
+        userDAO.printAllUsers();
+        System.out.println(":)");
+
         return new RegisterResponse(newUserData.username(),newAuthData.authToken());
     }
-
 
     public UserData getUser(String username) throws DataAccessException {
         return userDAO.getUser(username);

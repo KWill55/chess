@@ -54,6 +54,16 @@ public class UserDAO {
         }
     }
 
+    public void printAllUsers() {
+        System.out.println("=== Stored Users ===");
+        for (UserData user : users.values()) {
+            System.out.println("Username: " + user.username());
+            System.out.println("Password: " + user.password());
+            System.out.println("Email: " + user.email());
+            System.out.println("---------------------");
+        }
+    }
+
     /**
      * Clears all users from the database (for testing).
      */
