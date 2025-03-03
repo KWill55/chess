@@ -6,7 +6,6 @@ import dataaccess.GameDAO;
 import service.UserService;
 import service.AuthService;
 import service.GameService;
-import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import spark.*;

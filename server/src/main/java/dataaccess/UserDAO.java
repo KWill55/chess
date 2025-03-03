@@ -10,8 +10,8 @@ public class UserDAO {
     private final Map<String, UserData> users = new HashMap<>();
 
     public UserDAO(){
-        users.put("Kenny", new UserData("Kenny", "password", "kenny@email.com"));
-        System.out.println("Preloaded user: Kenny (password: password)");
+//        users.put("Kenny", new UserData("Kenny", "password", "kenny@email.com"));
+//        System.out.println("Preloaded user: Kenny (password: password)");
     }
 
     /**
@@ -20,18 +20,15 @@ public class UserDAO {
      * @throws DataAccessException If the username already exists or input is invalid.
      */
     public void createUser(UserData user) throws DataAccessException {
-        try {
-            if (user == null || user.username() == null) {
-                throw new DataAccessException("Error: Invalid user data");
-            }
-            if (users.containsKey(user.username())) {
-                throw new DataAccessException("Error: Username already taken");
-            }
-            users.put(user.username(), user);
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Unable to create user");
+        if (user == null || user.username() == null) {
+            throw new DataAccessException("Error: Invalid user data");
         }
+        if (users.containsKey(user.username())) {
+            throw new DataAccessException("Error: Username already taken");
+        }
+        users.put(user.username(), user);
     }
+
 
     /**
      * Retrieves a user from the database.
@@ -41,18 +38,23 @@ public class UserDAO {
      */
     public UserData getUser(String username) throws DataAccessException {
         System.out.println("DEBUG: calling getUser for: " + username); // Debugging
-        try {
-            if (username == null) {
-                System.out.println("DEBUG: User not found: " + username);
-                throw new DataAccessException("Error: Username cannot be null");
-            }
-            System.out.println("Returning userData for " + username + " to AuthService");
-            return users.get(username);
-        } catch (Exception e) {
-            System.out.println("DEBUG: Unable to retrieve user: " + username);
-            throw new DataAccessException("Error: Unable to retrieve user");
+
+        if (username == null) {
+            System.out.println("DEBUG: Username cannot be null");
+            throw new DataAccessException("Error: Username cannot be null");
         }
+
+        UserData user = users.get(username);
+
+        if (user == null) {
+            System.out.println("DEBUG: User not found: " + username);
+            throw new DataAccessException("Error: User not found");
+        }
+
+        System.out.println("DEBUG: Returning userData for " + username + " to AuthService");
+        return user;
     }
+
 
     public void printAllUsers() {
         System.out.println("=== Stored Users ===");
