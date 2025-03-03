@@ -5,7 +5,7 @@ import java.util.*;
 
 public class GameDAO {
     private final Map<Integer, GameData> games = new HashMap<>();
-    private int nextGameID = 1; // Auto-incrementing game ID
+    private int nextGameID = 1; //initial gameID
 
     // Create a new game and return its ID
     public int createGame(GameData game) throws DataAccessException {
@@ -13,12 +13,13 @@ public class GameDAO {
             throw new DataAccessException("Error: Invalid game data");
         }
 
+        //generate new gameID and store game into games
         int gameID = nextGameID++;
         games.put(gameID, game);
         return gameID;
     }
 
-    // Retrieve a game by ID
+    // Retrieve a game by gameID
     public GameData getGame(int gameID) throws DataAccessException {
         if (!games.containsKey(gameID)) {
             throw new DataAccessException("Error: Game not found");

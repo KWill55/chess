@@ -29,7 +29,7 @@ public class GameService {
         return gameDAO.getGame(gameID);
     }
 
-    public void updateGame(int gameID, GameData updatedGame) throws DataAccessException {
+    public void updateGame(int gameID,GameData updatedGame) throws DataAccessException {
         gameDAO.updateGame(gameID, updatedGame);
     }
 
