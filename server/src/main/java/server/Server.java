@@ -24,9 +24,9 @@ public class Server {
         AuthDAO authDAO = new AuthDAO();
         GameDAO gameDAO = new GameDAO();
 
-        this.userService = new UserService(userDAO, authDAO);
-        this.authService = new AuthService(authDAO, userDAO);
-        this.gameService = new GameService(gameDAO, authDAO, userDAO);
+        this.userService = new UserService(userDAO);
+        this.authService = new AuthService(authDAO);
+        this.gameService = new GameService(gameDAO);
     }
 
     // Constructor with dependencies (for flexibility in other use cases)
@@ -69,56 +69,45 @@ public class Server {
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    /// User
+    /// User APIs
     /////////////////////////////////////////////////////////////////////////////////
 
     private Object registerUser(Request req, Response res) {
         var gson = new Gson();
-        RegisterRequest registerRequest = gson.fromJson(req.body(), RegisterRequest.class);
+        RegisterRequest request = gson.fromJson(req.body(), RegisterRequest.class);
 
         try {
-            RegisterResponse response = userService.register(registerRequest);
+            UserData user = new UserData(request.username(), request.password(), request.email());
+            userService.createUser(user);
             res.status(200);
-            return gson.toJson(response);
+            return gson.toJson(Map.of("message", "User registered successfully"));
         } catch (Exception e) {
-            res.status(400); // Bad request (e.g., username already taken)
+            res.status(400);
             return gson.toJson(Map.of("message", "Error: Could not register user"));
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// Auth stuff
-    /////////////////////////////////////////////////////////////////////////////////
-
-    /*
-    Login User (server/handler)
-    - convert JSON to Java object (Handler)
-    - Call UserService.login with loginRequest as parameter
-    - update response if a bad request
-    - return JSON string with username and authToken
-     */
-    private Object loginUser(Request req, Response res) throws DataAccessException {
-
-        //TODO separate handlers into their own files
-        //convert JSON to Java object (Handler)
+    private Object loginUser(Request req, Response res) {
         var gson = new Gson();
-        LoginRequest loginRequest = gson.fromJson(req.body(), LoginRequest.class);
+        LoginRequest request = gson.fromJson(req.body(), LoginRequest.class);
 
-        // Initialize services
-        UserService userService = new UserService(new UserDAO(), new AuthDAO());
-        AuthService authService = new AuthService(new AuthDAO(), new UserDAO());
-
-        //call login from AuthService
-        LoginResponse response;
         try {
-            response = authService.login(loginRequest);
-            res.status(200); // Success
-            return gson.toJson(response);
-        } catch (DataAccessException e) {
-            res.status(401); // Unauthorized
-            return gson.toJson(Map.of("message", "Error: Unauthorized"));
+            UserData user = userService.getUser(request.username());
+
+            if (user == null || !user.password().equals(request.password())) {
+                res.status(401);
+                return gson.toJson(Map.of("message", "Error: Unauthorized"));
+            }
+
+            String authToken = authService.createAuth(request.username());
+            res.status(200);
+            return gson.toJson(new LoginResponse(request.username(), authToken));
+        } catch (Exception e) {
+            res.status(400);
+            return gson.toJson(Map.of("message", "Error: Could not login"));
         }
     }
+
 
     private Object logoutUser(Request req, Response res) {
         var gson = new Gson();
@@ -130,7 +119,7 @@ public class Server {
         }
 
         try {
-            authService.logout(authToken);
+            authService.deleteAuth(authToken);
             res.status(200);
             return gson.toJson(Map.of("message", "Logout successful"));
         } catch (Exception e) {
@@ -140,45 +129,29 @@ public class Server {
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    /// Game
+    /// Game  APIs
     /////////////////////////////////////////////////////////////////////////////////
 
     private Object listGames(Request req, Response res) {
         var gson = new Gson();
-        String authToken = req.headers("Authorization");
-
-        if (authToken == null || authToken.isEmpty()) {
-            res.status(401);
-            return gson.toJson(Map.of("message", "Error: Missing auth token"));
-        }
-
-        ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
-
         try {
-            ListGamesResponse response = gameService.listGames(listGamesRequest);
+            var games = gameService.listGames();
             res.status(200);
-            return gson.toJson(response);
+            return gson.toJson(games);
         } catch (Exception e) {
-            res.status(401);
-            return gson.toJson(Map.of("message", "Error: Unauthorized"));
+            res.status(400);
+            return gson.toJson(Map.of("message", "Error: Could not list games"));
         }
     }
 
     private Object createGame(Request req, Response res) {
         var gson = new Gson();
-        String authToken = req.headers("Authorization");
-        //TODO include authToken into request
-        CreateGameRequest createGameRequest = gson.fromJson(req.body(), CreateGameRequest.class);
-
-        if (authToken == null || authToken.isEmpty()) {
-            res.status(401);
-            return gson.toJson(Map.of("message", "Error: Missing auth token"));
-        }
+        CreateGameRequest request = gson.fromJson(req.body(), CreateGameRequest.class);
 
         try {
-            CreateGameResponse game = gameService.createGame(createGameRequest);
+            int gameID = gameService.createGame(request.gameName());
             res.status(200);
-            return gson.toJson(game);
+            return gson.toJson(Map.of("gameID", gameID));
         } catch (Exception e) {
             res.status(400);
             return gson.toJson(Map.of("message", "Error: Could not create game"));
@@ -188,16 +161,18 @@ public class Server {
     private Object joinGame(Request req, Response res) {
         var gson = new Gson();
         String authToken = req.headers("Authorization");
-        JoinGameRequest joinRequest = gson.fromJson(req.body(), JoinGameRequest.class);
 
         if (authToken == null || authToken.isEmpty()) {
             res.status(401);
             return gson.toJson(Map.of("message", "Error: Missing auth token"));
         }
 
+        JoinGameRequest request = gson.fromJson(req.body(), JoinGameRequest.class);
 
         try {
-            gameService.joinGame(joinRequest);
+            // Verify authToken and join the game
+//            gameService.updateGame(request.gameID(), authService.getUserFromAuth(authToken), request.color());
+
             res.status(200);
             return gson.toJson(Map.of("message", "Joined game successfully"));
         } catch (Exception e) {
@@ -207,15 +182,15 @@ public class Server {
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    /// Clear
+    /// Clear API
     /////////////////////////////////////////////////////////////////////////////////
 
     private Object clear(Request req, Response res) {
         var gson = new Gson();
         try {
-            userService.clearAll();
-            authService.clearAll();
-            gameService.clearAll();
+            userService.clear();
+            authService.clear();
+            gameService.clear();
             res.status(200);
             return gson.toJson(Map.of("message", "Database cleared"));
         } catch (Exception e) {

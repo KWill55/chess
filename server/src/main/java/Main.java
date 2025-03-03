@@ -18,9 +18,9 @@ public class Main {
         GameDAO gameDAO = new GameDAO();
 
         // Initialize Services
-        UserService userService = new UserService(userDAO, authDAO);
-        AuthService authService = new AuthService(authDAO, userDAO);
-        GameService gameService = new GameService(gameDAO, authDAO, userDAO);
+        UserService userService = new UserService(userDAO);
+        AuthService authService = new AuthService(authDAO);
+        GameService gameService = new GameService(gameDAO);
 
         // Create and start the server on port 8080
         Server server = new Server(userService, authService, gameService);
