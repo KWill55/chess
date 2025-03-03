@@ -10,9 +10,9 @@ import dataaccess.DataAccessException;
 import java.util.UUID;
 
 /*
-* manages logging in and logging out
-* Generates authTokens
-* validates authTokens
+ * manages logging in and logging out
+ * Generates authTokens
+ * validates authTokens
  */
 
 public class AuthService {
