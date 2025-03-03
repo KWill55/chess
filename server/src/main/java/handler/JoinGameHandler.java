@@ -38,21 +38,21 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
             GameData game = gameService.getGame(request.gameID());
             if (game == null) {
                 res.status(404); // Not found
-                return Map.of("message", "Error: Game not found");
+                return gson.toJson(Map.of("message", "Error: Game not found"));
             }
 
             // Get the username from the auth token
             String username = authService.getUserFromAuth(authToken);
             if (username == null) {
                 res.status(401); // Unauthorized
-                return Map.of("message", "Error: Unauthorized");
+                return gson.toJson(Map.of("message", "Error: Unauthorized"));
             }
 
             // Check if the player color is available
             if (request.playerColor().equals("WHITE") && game.whiteUsername() != null ||
                     request.playerColor().equals("BLACK") && game.blackUsername() != null) {
                 res.status(403); // Forbidden (spot already taken)
-                return Map.of("message", "Error: Spot already taken");
+                return gson.toJson(Map.of("message", "Error: Spot already taken"));
             }
 
             // Update the game with the new player
@@ -67,10 +67,10 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
             // Save the updated game
             gameService.updateGame(request.gameID(), updatedGame);
 
-            return Map.of("message", "Joined game successfully");
+            return gson.toJson(Map.of("message", "Joined game successfully"));
         } catch (DataAccessException e) {
             res.status(403); // Forbidden (e.g., database issue)
-            return Map.of("message", "Error: " + e.getMessage());
+            return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
 }

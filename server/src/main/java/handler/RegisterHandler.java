@@ -28,7 +28,7 @@ public class RegisterHandler extends BaseHandler<RegisterRequest> {
     protected Object handleRequest(RegisterRequest request, Request req, Response res) {
         if (request.username() == null || request.password() == null || request.email() == null) {
             res.status(400); // Bad request
-            return Map.of("message", "Error: bad request");
+            return gson.toJson(Map.of("message", "Error: bad request"));
         }
 
         try {
@@ -39,12 +39,15 @@ public class RegisterHandler extends BaseHandler<RegisterRequest> {
             userService.createUser(newUser);
 
             // Generate auth token for the newly registered user
-            String authToken = authService.createAuth(request.username());
+//            String authToken = authService.createAuth(request.username());
 
-            return new RegisterResponse(request.username(), authToken);
+//            return new RegisterResponse(request.username(), authToken);
+            res.status(200);
+            return gson.toJson(Map.of("message", "User registered successfully"));
+
         } catch (Exception e) {
             res.status(403); // Forbidden (username already taken)
-            return Map.of("message", "Error: already taken");
+            return gson.toJson(Map.of("message", "Error: already taken"));
         }
     }
 }

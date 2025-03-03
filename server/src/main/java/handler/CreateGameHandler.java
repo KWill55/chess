@@ -30,7 +30,7 @@ public class CreateGameHandler extends BaseHandler<CreateGameRequest> {
 
         if (request.gameName() == null || request.gameName().isBlank()) {
             res.status(400); // Bad request
-            return Map.of("message", "Error: bad request");
+            return gson.toJson(Map.of("message", "Error: bad request"));
         }
 
         try {
@@ -38,7 +38,7 @@ public class CreateGameHandler extends BaseHandler<CreateGameRequest> {
             return new CreateGameResponse(gameID);
         } catch (DataAccessException e) {
             res.status(403); // Forbidden (e.g., username doesn't exist)
-            return Map.of("message", "Error: " + e.getMessage());
+            return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
 }

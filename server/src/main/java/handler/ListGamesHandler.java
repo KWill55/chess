@@ -34,7 +34,7 @@ public class ListGamesHandler extends BaseHandler<Void> {
             authToken = getAuthToken(req);
         } catch (Exception e) {
             res.status(401); // Unauthorized
-            return Map.of("message", "Error: Missing or invalid auth token");
+            return gson.toJson(Map.of("message", "Error: Missing or invalid auth token"));
         }
 
         try {
@@ -47,7 +47,7 @@ public class ListGamesHandler extends BaseHandler<Void> {
             return response;
         } catch (DataAccessException e) {
             res.status(403); // Forbidden (e.g., invalid auth)
-            return Map.of("message", "Error: " + e.getMessage());
+            return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
 }

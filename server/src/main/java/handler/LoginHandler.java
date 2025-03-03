@@ -27,7 +27,7 @@ public class LoginHandler extends BaseHandler<LoginRequest> {
     protected Object handleRequest(LoginRequest request, Request req, Response res) {
         if (request.username() == null || request.password() == null) {
             res.status(400); // Bad request
-            return Map.of("message", "Error: bad request");
+            return gson.toJson(Map.of("message", "Error: bad request"));
         }
 
         try {
@@ -37,16 +37,16 @@ public class LoginHandler extends BaseHandler<LoginRequest> {
             // If the user doesn't exist or password doesn't match, return Unauthorized
             if (user == null || !user.password().equals(request.password())) {
                 res.status(401);
-                return Map.of("message", "Error: Unauthorized");
+                return gson.toJson(Map.of("message", "Error: Unauthorized"));
             }
 
             // Generate auth token
             String authToken = authService.createAuth(request.username());
-            return new LoginResponse(request.username(), authToken);
+            return gson.toJson(new LoginResponse(request.username(), authToken));
 
         } catch (Exception e) {
-            res.status(500); // Internal server error
-            return Map.of("message", "Error: " + e.getMessage());
+            res.status(401); // Internal server error
+            return gson.toJson(Map.of("message", "Error: Unauthorized"));
         }
     }
 }

@@ -30,10 +30,10 @@ public class ClearHandler extends BaseHandler<Void> {
             userService.clear();
             authService.clear();
             gameService.clear();
-            return Map.of("message", "Database cleared");
+            return gson.toJson(Map.of("message", "Database cleared"));
         } catch (Exception e) {
             res.status(500); // Internal server error
-            return Map.of("message", "Error: Could not clear database");
+            return gson.toJson(Map.of("message", "Error: Could not clear database"));
         }
     }
 }
