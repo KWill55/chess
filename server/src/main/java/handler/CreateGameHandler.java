@@ -3,6 +3,7 @@ package handler;
 import dataaccess.DataAccessException;
 import model.CreateGameRequest;
 import model.CreateGameResponse;
+import model.LoginResponse;
 import service.AuthService;
 import service.GameService;
 import spark.Request;
@@ -35,7 +36,8 @@ public class CreateGameHandler extends BaseHandler<CreateGameRequest> {
 
         try {
             int gameID = gameService.createGame(request.gameName());
-            return new CreateGameResponse(gameID);
+            res.status(200);
+            return gson.toJson(new CreateGameResponse(gameID));
         } catch (DataAccessException e) {
             res.status(403); // Forbidden (e.g., username doesn't exist)
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));

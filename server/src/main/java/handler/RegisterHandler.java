@@ -39,11 +39,11 @@ public class RegisterHandler extends BaseHandler<RegisterRequest> {
             userService.createUser(newUser);
 
             // Generate auth token for the newly registered user
-//            String authToken = authService.createAuth(request.username());
+            String authToken = authService.createAuth(request.username());
 
 //            return new RegisterResponse(request.username(), authToken);
             res.status(200);
-            return gson.toJson(Map.of("message", "User registered successfully"));
+            return gson.toJson(new RegisterResponse(request.username(), authToken));
 
         } catch (Exception e) {
             res.status(403); // Forbidden (username already taken)

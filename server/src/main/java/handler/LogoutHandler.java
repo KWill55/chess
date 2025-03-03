@@ -34,7 +34,7 @@ public class LogoutHandler extends BaseHandler<Void> {
         //attempt to delete authToken
         try {
             authService.deleteAuth(authToken);
-            res.status(201);
+            res.status(200);
             return gson.toJson(Map.of("message", "Logout successful"));
         } catch (DataAccessException e) {
             res.status(401); // Unauthorized (invalid token)

@@ -1,5 +1,7 @@
 package handler;
 
+import model.ClearRequest;
+import model.ClearResponse;
 import service.UserService;
 import service.AuthService;
 import service.GameService;
@@ -30,7 +32,7 @@ public class ClearHandler extends BaseHandler<Void> {
             userService.clear();
             authService.clear();
             gameService.clear();
-            return gson.toJson(Map.of("message", "Database cleared"));
+            return gson.toJson(new ClearResponse());
         } catch (Exception e) {
             res.status(500); // Internal server error
             return gson.toJson(Map.of("message", "Error: Could not clear database"));
