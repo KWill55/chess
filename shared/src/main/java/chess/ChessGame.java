@@ -199,44 +199,47 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        // If the team is not in check, it's not checkmate
         if (!isInCheck(teamColor)) {
-            return false;
+            return false; // Not checkmate if not in check
         }
 
-        // Get all the pieces of the current team and try every possible move
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
 
-                // Skip empty squares and enemy pieces
                 if (piece == null || piece.getTeamColor() != teamColor) {
-                    continue;
+                    continue; // Skip empty squares and enemy pieces
                 }
 
-                // Get all valid moves for this piece
-                Collection<ChessMove> moves = validMoves(position);
-
-                // Check if any move removes the check
-                for (ChessMove move : moves) {
-                    ChessGame tempGame = createTempGame(board);
-                    try {
-                        tempGame.makeMove(move);
-                        // If the move removes check, it's NOT checkmate
-                        if (!tempGame.isInCheck(teamColor)) {
-                            return false;
-                        }
-                    } catch (InvalidMoveException e) {
-                        // Ignore invalid moves
+                for (ChessMove move : validMoves(position)) {
+                    if (canEscapeCheck(move, teamColor)) {
+                        return false; // If any move escapes check, it's not checkmate
                     }
                 }
             }
         }
 
-        // If no move removes check, it's checkmate
-        return true;
+        return true; // No valid move to escape check means checkmate
     }
+
+    /**
+     * Checks if a move removes the check condition.
+     *
+     * @param move The move to test
+     * @param teamColor The team being checked
+     * @return True if the move removes check, otherwise false
+     */
+    private boolean canEscapeCheck(ChessMove move, TeamColor teamColor) {
+        ChessGame tempGame = createTempGame(board);
+        try {
+            tempGame.makeMove(move);
+            return !tempGame.isInCheck(teamColor); // If move removes check, return true
+        } catch (InvalidMoveException e) {
+            return false; // Ignore invalid moves
+        }
+    }
+
 
     /**
      * Determines if the given team is in stalemate, which here is defined as having
