@@ -167,7 +167,9 @@ public class ChessGame {
                 ChessPosition position = board.toChessFormat(new ChessPosition(row, col));
 
                 // Skip empty squares
-                if (currentPiece == null) continue;
+                if (currentPiece == null){
+                    continue;
+                }
 
                 // If currentPiece is an enemy, add its moves
                 if (currentPiece.getTeamColor() == enemyTeamColor) {
