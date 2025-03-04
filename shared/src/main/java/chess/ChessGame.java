@@ -376,7 +376,6 @@ public class ChessGame {
         tempBoard.addPiece(newPosition, piece); // add new piece location
 
         System.out.println("Board after move");
-        tempBoard.drawBoard();
         System.out.println(teamColor + " is in check? " + isInCheck(teamColor, tempBoard));
 
         return isInCheck(teamColor, tempBoard);

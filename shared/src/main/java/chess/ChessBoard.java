@@ -114,40 +114,6 @@ public class ChessBoard {
         }
     }
 
-    public void drawBoard(){
-        for (int row=0; row<squares.length; row++){
-            for (int col=0; col<squares.length; col++){
-                ChessPiece piece = squares[row][col];
-
-                if (piece != null){
-                    char pieceChar = piece.getPieceType().name().charAt(0);
-                    if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT){
-                        if (piece.getTeamColor() == ChessGame.TeamColor.BLACK){
-                            System.out.print("N ");
-                        }
-                        else{
-                            System.out.print("n ");
-                        }
-                    }
-                    else{
-                        //lowercase letters for white pieces
-                        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE){
-                            System.out.print(Character.toLowerCase(pieceChar) + " ");
-                        }
-                        //uppercase letters for black pieces
-                        else{
-                            System.out.print(Character.toUpperCase(pieceChar) + " ");
-                        }
-                    }
-                }
-                else{
-                    System.out.print("_ ");
-                }
-            }
-            System.out.println();
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
