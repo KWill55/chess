@@ -1,7 +1,5 @@
 package server;
 
-
-import com.google.gson.Gson;
 import dataaccess.GameDAO;
 import handler.*;
 import service.UserService;
@@ -10,202 +8,86 @@ import service.GameService;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import spark.*;
-import java.util.Map;
-import model.*;
 
-
-
+/**
+ * The main server class that sets up the application and handles incoming HTTP requests.
+ * Uses Spark framework for defining API endpoints.
+ */
 public class Server {
     private final UserService userService;
     private final AuthService authService;
     private final GameService gameService;
 
+    /**
+     * Default constructor that initializes the server with fresh DAOs and services.
+     */
     public Server() {
+        // Instantiate DAO (Data Access Object) components for user, auth, and game data management
         UserDAO userDAO = new UserDAO();
         AuthDAO authDAO = new AuthDAO();
         GameDAO gameDAO = new GameDAO();
 
+        // Initialize services, passing DAO dependencies
         this.userService = new UserService(userDAO);
         this.authService = new AuthService(authDAO);
         this.gameService = new GameService(gameDAO);
     }
 
-    // Constructor with dependencies (for flexibility in other use cases)
-    //overloaded version
+    /**
+     * Overloaded constructor allowing dependency injection of services.
+     *
+     * @param userService  Handles user-related operations
+     * @param authService  Manages authentication tokens
+     * @param gameService  Manages game-related operations
+     */
     public Server(UserService userService, AuthService authService, GameService gameService) {
         this.userService = userService;
         this.authService = authService;
         this.gameService = gameService;
     }
 
+    /**
+     * Starts the server and sets up the API endpoints.
+     *
+     * @param desiredPort The port number on which the server should run.
+     * @return The actual port the server is running on.
+     */
     public int run(int desiredPort) {
         System.out.println("Server running on port: " + desiredPort);
         Spark.port(desiredPort);
 
+        // Serves static files (if applicable)
         Spark.staticFiles.location("web");
 
-        // Register your endpoints and handle exceptions here.
-//        Spark.post("/user", this::registerUser); //for registering a user
-//        Spark.post("/session", this::loginUser); //for logging in
-//        Spark.delete("/session", this::logoutUser); //for logging out
-//        Spark.get("/game", this::listGames); //for listing games
-//        Spark.post("/game", this::createGame); //for creating a game
-//        Spark.put("/game", this::joinGame); //for joining a game
-//        Spark.delete("/db", this::clear); //for clearing application
+        // Define API routes and attach corresponding request handlers
+        Spark.post("/user", new RegisterHandler(userService, authService));    // User registration
+        Spark.post("/session", new LoginHandler(userService, authService));    // User login
+        Spark.delete("/session", new LogoutHandler(authService));              // User logout
+        Spark.get("/game", new ListGamesHandler(gameService, authService));    // List available games
+        Spark.post("/game", new CreateGameHandler(gameService, authService));  // Create a new game
+        Spark.put("/game", new JoinGameHandler(gameService, authService));     // Join an existing game
+        Spark.delete("/db", new ClearHandler(userService, authService, gameService)); // Clear all data
 
-
-        Spark.post("/user", new RegisterHandler(userService, authService));
-        Spark.post("/session", new LoginHandler(userService, authService));
-        Spark.delete("/session", new LogoutHandler(authService));
-        Spark.get("/game", new ListGamesHandler(gameService, authService));
-        Spark.post("/game", new CreateGameHandler(gameService,authService));
-        Spark.put("/game", new JoinGameHandler(gameService, authService));
-        Spark.delete("/db", new ClearHandler(userService, authService, gameService));
-
-        //This line initializes the server and can be removed once you have a functioning endpoint
+        // Initialize the Spark server
         Spark.init();
-
-        Spark.awaitInitialization();
+        Spark.awaitInitialization(); // Wait for the server to start fully
         return Spark.port();
     }
 
+    /**
+     * Retrieves the current port number the server is running on.
+     *
+     * @return The port number.
+     */
     public int port() {
         return Spark.port();
     }
 
+    /**
+     * Stops the server and ensures graceful shutdown.
+     */
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
     }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    /// User APIs
-    /////////////////////////////////////////////////////////////////////////////////
-
-//    private Object registerUser(Request req, Response res) {
-//        var gson = new Gson();
-//        RegisterRequest request = gson.fromJson(req.body(), RegisterRequest.class);
-//
-//        try {
-//            UserData user = new UserData(request.username(), request.password(), request.email());
-//            userService.createUser(user);
-//            res.status(200);
-//            return gson.toJson(Map.of("message", "User registered successfully"));
-//        } catch (Exception e) {
-//            res.status(403);
-//            return gson.toJson(Map.of("message", "Error: Could not register user"));
-//        }
-//    }
-
-//    private Object loginUser(Request req, Response res) {
-//        var gson = new Gson();
-//        LoginRequest request = gson.fromJson(req.body(), LoginRequest.class);
-//
-//        try {
-//            UserData user = userService.getUser(request.username());
-//
-//            if (user == null || !user.password().equals(request.password())) {
-//                res.status(401);
-//                return gson.toJson(Map.of("message", "Error: Unauthorized"));
-//            }
-//
-//            String authToken = authService.createAuth(request.username());
-//            res.status(200);
-//            return gson.toJson(new LoginResponse(request.username(), authToken));
-//        } catch (Exception e) {
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: Could not login"));
-//        }
-//    }
-
-
-//    private Object logoutUser(Request req, Response res) {
-//        var gson = new Gson();
-//        String authToken = req.headers("Authorization");
-//
-//        if (authToken == null || authToken.isEmpty()) {
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: Missing auth token"));
-//        }
-//
-//        try {
-//            authService.deleteAuth(authToken);
-//            res.status(200);
-//            return gson.toJson(Map.of("message", "Logout successful"));
-//        } catch (Exception e) {
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: Unauthorized"));
-//        }
-//    }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    /// Game  APIs
-    /////////////////////////////////////////////////////////////////////////////////
-
-//    private Object listGames(Request req, Response res) {
-//        var gson = new Gson();
-//        try {
-//            var games = gameService.listGames();
-//            res.status(200);
-//            return gson.toJson(games);
-//        } catch (Exception e) {
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: Could not list games"));
-//        }
-//    }
-
-//    private Object createGame(Request req, Response res) {
-//        var gson = new Gson();
-//        CreateGameRequest request = gson.fromJson(req.body(), CreateGameRequest.class);
-//
-//        try {
-//            int gameID = gameService.createGame(request.gameName());
-//            res.status(200);
-//            return gson.toJson(Map.of("gameID", gameID));
-//        } catch (Exception e) {
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: Could not create game"));
-//        }
-//    }
-//
-//    private Object joinGame(Request req, Response res) {
-//        var gson = new Gson();
-//        String authToken = req.headers("Authorization");
-//
-//        if (authToken == null || authToken.isEmpty()) {
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: Missing auth token"));
-//        }
-//
-//        JoinGameRequest request = gson.fromJson(req.body(), JoinGameRequest.class);
-//
-//        try {
-//            // Verify authToken and join the game
-////            gameService.updateGame(request.gameID(), authService.getUserFromAuth(authToken), request.color());
-//
-//            res.status(200);
-//            return gson.toJson(Map.of("message", "Joined game successfully"));
-//        } catch (Exception e) {
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: Could not join game"));
-//        }
-//    }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    /// Clear API
-    /////////////////////////////////////////////////////////////////////////////////
-
-//    private Object clear(Request req, Response res) {
-//        var gson = new Gson();
-//        try {
-//            userService.clear();
-//            authService.clear();
-//            gameService.clear();
-//            res.status(200);
-//            return gson.toJson(Map.of("message", "Database cleared"));
-//        } catch (Exception e) {
-//            res.status(500);
-//            return gson.toJson(Map.of("message", "Error: Could not clear database"));
-//        }
-//    }
 }

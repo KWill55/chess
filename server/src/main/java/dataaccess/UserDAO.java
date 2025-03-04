@@ -4,20 +4,31 @@ import model.UserData;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The UserDAO class is responsible for handling user-related data storage and retrieval.
+ * It provides methods to create, retrieve, and clear users from an in-memory database.
+ */
 public class UserDAO {
 
-    // Temporary database structure (until SQL is implemented)
+    // In-memory storage for user accounts (simulating a database)
     private final Map<String, UserData> users = new HashMap<>();
 
-    public UserDAO(){
-//        users.put("Kenny", new UserData("Kenny", "password", "kenny@email.com"));
-//        System.out.println("Preloaded user: Kenny (password: password)");
+    /**
+     * Default constructor for UserDAO.
+     */
+    public UserDAO() {
     }
 
+    /////////////////////////////////////////////////////////////////////////////////
+    /// User Methods
+    /////////////////////////////////////////////////////////////////////////////////
+
     /**
-     * Creates a new user in the database.
+     * Creates a new user and stores it in the database.
+     * Ensures that usernames are unique.
+     *
      * @param user The UserData object containing user details.
-     * @throws DataAccessException If the username already exists or input is invalid.
+     * @throws DataAccessException If the username is already taken or the input is invalid.
      */
     public void createUser(UserData user) throws DataAccessException {
         if (user == null || user.username() == null) {
@@ -29,12 +40,12 @@ public class UserDAO {
         users.put(user.username(), user);
     }
 
-
     /**
-     * Retrieves a user from the database.
+     * Retrieves a user by their username.
+     *
      * @param username The username of the user.
-     * @return The UserData object, or null if the user is not found.
-     * @throws DataAccessException If the username is null or an unexpected error occurs.
+     * @return The UserData object representing the user.
+     * @throws DataAccessException If the username is null or does not exist.
      */
     public UserData getUser(String username) throws DataAccessException {
         System.out.println("DEBUG: calling getUser for: " + username); // Debugging
@@ -55,19 +66,29 @@ public class UserDAO {
         return user;
     }
 
-
+    /**
+     * Prints all users currently stored in the database.
+     */
     public void printAllUsers() {
         System.out.println("=== Stored Users ===");
-        for (UserData user : users.values()) {
-            System.out.println("Username: " + user.username());
-            System.out.println("Password: " + user.password());
-            System.out.println("Email: " + user.email());
-            System.out.println("---------------------");
+        if (users.isEmpty()) {
+            System.out.println("No users found.");
+        } else {
+            for (UserData user : users.values()) {
+                System.out.println("Username: " + user.username());
+                System.out.println("Password: " + user.password());
+                System.out.println("Email: " + user.email());
+                System.out.println("---------------------");
+            }
         }
     }
 
+    /////////////////////////////////////////////////////////////////////////////////
+    /// Data Clearing Method
+    /////////////////////////////////////////////////////////////////////////////////
+
     /**
-     * Clears all users from the database (for testing).
+     * Clears all users from the database.
      */
     public void clear() {
         users.clear();

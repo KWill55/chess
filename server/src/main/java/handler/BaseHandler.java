@@ -11,7 +11,7 @@ import java.util.Map;
  * BaseHandler is an abstract class that provides common functionality for all request handlers.
  * It processes incoming requests, handles errors, and gets authTokens.
  *
- * @param <T> The type of request data expected by the handler (e.g., LoginRequest, RegisterRequest).
+ * @param <T> The type of request data expected by the handler
  */
 public abstract class BaseHandler<T> implements Route {
 
@@ -43,7 +43,6 @@ public abstract class BaseHandler<T> implements Route {
 
     /**
      * Parses the request body and converts it into the appropriate Java object.
-     * Subclasses must implement this method to define how to parse their specific request type.
      *
      * @param request The HTTP request.
      * @return The parsed request data object.
@@ -52,7 +51,6 @@ public abstract class BaseHandler<T> implements Route {
 
     /**
      * Processes the request and returns a response.
-     * This method must be implemented by each specific handler to define request handling logic.
      *
      * @param requestData The parsed request data.
      * @param request The HTTP request.
