@@ -66,23 +66,6 @@ public class UserDAO {
         return user;
     }
 
-    /**
-     * Prints all users currently stored in the database.
-     */
-    public void printAllUsers() {
-        System.out.println("=== Stored Users ===");
-        if (users.isEmpty()) {
-            System.out.println("No users found.");
-        } else {
-            for (UserData user : users.values()) {
-                System.out.println("Username: " + user.username());
-                System.out.println("Password: " + user.password());
-                System.out.println("Email: " + user.email());
-                System.out.println("---------------------");
-            }
-        }
-    }
-
     /////////////////////////////////////////////////////////////////////////////////
     /// Data Clearing Method
     /////////////////////////////////////////////////////////////////////////////////
