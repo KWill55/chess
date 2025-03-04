@@ -125,118 +125,69 @@ public class ChessGame {
     }
 
     /**
-     * Determines if the given team is in check
+     * Determines if the given team is in check.
      *
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        //define variables
-        ChessPosition kingPosition = null;
-        TeamColor enemyTeamColor = getOtherTeamColor(teamColor);
-
-        //collection to store all the current valid enemy moves
-        Collection<ChessPosition> enemyEndPositions = new ArrayList<>();
-
-        //iterate through the board, stop at enemy piece, and add their validMoves to enemyMoves array
-        for (int row = 0; row < board.squares.length; row++) {
-            for (int col = 0; col < board.squares.length; col++) {
-
-                //info for current piece iteration
-                ChessPiece currentPiece = board.squares[row][col];
-                ChessPosition internalPosition = new ChessPosition(row, col);
-                ChessPosition position = board.toChessFormat(internalPosition);
-
-                // Skip empty squares
-                if (currentPiece == null) {
-                    continue;
-                }
-
-                //if currentPiece is an enemy, add their moves
-                if (currentPiece.getTeamColor() == enemyTeamColor) {
-                    Collection<ChessMove> enemyMoves = currentPiece.pieceMoves(board, position);
-
-                    //add each valid endPosition to the enemyEndPositions array
-                    for (ChessMove enemyMove : enemyMoves) {
-                        enemyEndPositions.add(enemyMove.getEndPosition());
-                    }
-                }
-
-                //find our teamColor's King and get his endPosition
-                if ((currentPiece.getPieceType() == ChessPiece.PieceType.KING) && (currentPiece.getTeamColor() == teamColor)) {
-                    ChessPosition internalKingPosition = new ChessPosition(row, col);
-                    kingPosition = board.toChessFormat(internalKingPosition);
-                }
-            }
-        }
-
-        //king is in check
-        if (kingPosition != null) {
-            if (enemyEndPositions.contains(kingPosition)) {
-                return true;
-            }
-        }
-
-        //king is not in check
-        return false;
+        return isInCheck(teamColor, this.board); // Calls the helper method with the current board
     }
 
     /**
-     * Determines if the given team is in check
-     * overload method version of isInCheck with one parameter
+     * Determines if the given team is in check (overloaded version).
+     *
      * @param teamColor which team to check for check
-     * @param board current board
+     * @param board     the chess board to check
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor, ChessBoard board) {
+        return checkForCheck(teamColor, board); // Calls the extracted helper method
+    }
+
+    /**
+     * Private helper method that contains the shared logic to check if a king is in check.
+     *
+     * @param teamColor which team to check for check
+     * @param board     the chess board to check
+     * @return True if the specified team is in check
+     */
+    private boolean checkForCheck(TeamColor teamColor, ChessBoard board) {
+        // Define variables
         ChessPosition kingPosition = null;
         TeamColor enemyTeamColor = getOtherTeamColor(teamColor);
 
-        //collection to store all the current valid enemy moves
+        // Collection to store all valid enemy attack positions
         Collection<ChessPosition> enemyEndPositions = new ArrayList<>();
 
-        //iterate through the board, stop at enemy piece, and add their validMoves to enemyMoves array
+        // Iterate through the board, find enemy pieces, and track their valid moves
         for (int row = 0; row < board.squares.length; row++) {
             for (int col = 0; col < board.squares.length; col++) {
-
-                //info for current piece iteration
                 ChessPiece currentPiece = board.squares[row][col];
-                ChessPosition internalPosition = new ChessPosition(row, col);
-                ChessPosition position = board.toChessFormat(internalPosition);
+                ChessPosition position = board.toChessFormat(new ChessPosition(row, col));
 
                 // Skip empty squares
-                if (currentPiece == null) {
-                    continue;
-                }
+                if (currentPiece == null) continue;
 
-                //if currentPiece is an enemy, add their moves
+                // If currentPiece is an enemy, add its moves
                 if (currentPiece.getTeamColor() == enemyTeamColor) {
                     Collection<ChessMove> enemyMoves = currentPiece.pieceMoves(board, position);
-
-                    //add each valid endPosition to the enemyEndPositions array
                     for (ChessMove enemyMove : enemyMoves) {
                         enemyEndPositions.add(enemyMove.getEndPosition());
                     }
                 }
 
-                //find our teamColor's King and get his endPosition
-                if ((currentPiece.getPieceType() == ChessPiece.PieceType.KING) && (currentPiece.getTeamColor() == teamColor)) {
-                    ChessPosition internalKingPosition = new ChessPosition(row, col);
-                    kingPosition = board.toChessFormat(internalKingPosition);
+                // Find our team's King position
+                if (currentPiece.getPieceType() == ChessPiece.PieceType.KING && currentPiece.getTeamColor() == teamColor) {
+                    kingPosition = position;
                 }
             }
         }
 
-        //king is in check
-        if (kingPosition != null) {
-            if (enemyEndPositions.contains(kingPosition)) {
-                return true;
-            }
-        }
-
-        //king is not in check
-        return false;
+        // Check if the king's position is under attack
+        return kingPosition != null && enemyEndPositions.contains(kingPosition);
     }
+
 
 
     /**
