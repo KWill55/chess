@@ -41,7 +41,6 @@ public class RegisterHandler extends BaseHandler<RegisterRequest> {
             // Generate auth token for the newly registered user
             String authToken = authService.createAuth(request.username());
 
-//            return new RegisterResponse(request.username(), authToken);
             res.status(200);
             return gson.toJson(new RegisterResponse(request.username(), authToken));
 

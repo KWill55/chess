@@ -34,7 +34,6 @@ public class AuthService {
         return authData.username();
     }
 
-
     public void clear() throws DataAccessException {
         authDAO.clear();
     }

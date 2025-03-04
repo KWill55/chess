@@ -5,7 +5,7 @@ import java.util.*;
 
 public class GameDAO {
     private final Map<Integer, GameData> games = new HashMap<>();
-    private int nextGameID = 1; //initial gameID
+    private int nextGameID = 1; // initial gameID
 
     // Create a new game and return its ID
     public int createGame(GameData game) throws DataAccessException {
@@ -13,9 +13,10 @@ public class GameDAO {
             throw new DataAccessException("Error: Invalid game data");
         }
 
-        //generate new gameID and store game into games
+        // Generate new gameID and store the game
         int gameID = nextGameID++;
-        games.put(gameID, game);
+        GameData newGame = new GameData(gameID, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
+        games.put(gameID, newGame);
         return gameID;
     }
 
@@ -27,9 +28,11 @@ public class GameDAO {
         return games.get(gameID);
     }
 
-    // Retrieve all games
+    // Retrieve all games (sorted by gameID for consistency)
     public List<GameData> getAllGames() {
-        return new ArrayList<>(games.values());
+        List<GameData> gameList = new ArrayList<>(games.values());
+        gameList.sort(Comparator.comparingInt(GameData::gameID)); // Ensure sorted order
+        return gameList;
     }
 
     // Update game data
@@ -46,4 +49,3 @@ public class GameDAO {
         nextGameID = 1; // Reset game ID counter
     }
 }
-

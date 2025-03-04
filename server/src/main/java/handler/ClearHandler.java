@@ -1,7 +1,5 @@
 package handler;
 
-import model.ClearRequest;
-import model.ClearResponse;
 import service.UserService;
 import service.AuthService;
 import service.GameService;
@@ -23,18 +21,22 @@ public class ClearHandler extends BaseHandler<Void> {
 
     @Override
     protected Void parseRequest(Request req) {
-        return null; // No request body needed
+        return null; // No request body needed for this request
     }
 
     @Override
     protected Object handleRequest(Void requestData, Request req, Response res) {
         try {
+            // Call the clear methods for all services
             userService.clear();
             authService.clear();
             gameService.clear();
-            return gson.toJson(new ClearResponse());
+
+            // Return success response
+            res.status(200);
+            return gson.toJson(Map.of("message", "Database cleared"));
         } catch (Exception e) {
-            res.status(500); // Internal server error
+            res.status(500); // Internal Server Error
             return gson.toJson(Map.of("message", "Error: Could not clear database"));
         }
     }

@@ -27,26 +27,35 @@ public class ListGamesHandler extends BaseHandler<Void> {
 
     @Override
     protected Object handleRequest(Void requestData, Request req, Response res) {
-        String authToken;
+        String authToken = getAuthToken(req);
 
-        // Handle potential exception from getAuthToken()
-        try {
-            authToken = getAuthToken(req);
-        } catch (Exception e) {
+        if (authToken == null || authToken.isEmpty()) {
             res.status(401); // Unauthorized
             return gson.toJson(Map.of("message", "Error: Missing or invalid auth token"));
         }
 
         try {
+            // Validate auth token before proceeding
+            String username = authService.getUserFromAuth(authToken);
+            if (username == null) {
+                res.status(401); // Unauthorized
+                return gson.toJson(Map.of("message", "Error: Invalid authentication token"));
+            }
+
             // Get the list of games
             List<GameData> gamesList = gameService.listGames();
 
             // Wrap it in ListGamesResponse
-            ListGamesResponse response = new ListGamesResponse(gamesList);
+            res.status(200);
+            return gson.toJson(new ListGamesResponse(gamesList));
 
-            return response;
         } catch (DataAccessException e) {
-            res.status(403); // Forbidden (e.g., invalid auth)
+            // If the exception is due to an invalid token, return 401 instead of 403
+            if (e.getMessage().contains("authToken not found")) {
+                res.status(401); // Unauthorized
+            } else {
+                res.status(403); // Forbidden (e.g., database issues)
+            }
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }

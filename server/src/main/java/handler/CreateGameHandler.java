@@ -26,20 +26,31 @@ public class CreateGameHandler extends BaseHandler<CreateGameRequest> {
 
     @Override
     protected Object handleRequest(CreateGameRequest request, Request req, Response res) {
-        String authToken = getAuthToken(req);
+        String authToken = getAuthToken(req);  // Get the auth token from the header
 
-        if (request.gameName() == null || request.gameName().isBlank()) {
-            res.status(400); // Bad request
-            return gson.toJson(Map.of("message", "Error: bad request"));
+        // `401 Unauthorized` is returned when the auth token is missing
+        if (authToken == null || authToken.isEmpty()) {
+            res.status(401);
+            return gson.toJson(Map.of("message", "Error: Missing auth token"));
         }
 
         try {
+            // `401 Unauthorized` is returned for invalid auth tokens
+            String username = authService.getUserFromAuth(authToken);
+            if (username == null) {
+                res.status(401);
+                return gson.toJson(Map.of("message", "Error: Unauthorized"));
+            }
+
+            // create a game
             int gameID = gameService.createGame(request.gameName());
             res.status(200);
             return gson.toJson(new CreateGameResponse(gameID));
+
         } catch (DataAccessException e) {
-            res.status(401); // Forbidden (e.g., username doesn't exist)
+            res.status(401); // Forbidden (e.g., username doesn’t exist)
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
+
 }
