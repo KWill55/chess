@@ -21,9 +21,7 @@ public class GameServiceTests {
         gameService = new GameService(gameDAO);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// createGame: Successfully create a game (positive test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // createGame: Successfully create a game (positive test case)
     @Test
     @DisplayName("Successfully create a game")
     void testCreateGameSuccess() throws DataAccessException {
@@ -31,9 +29,7 @@ public class GameServiceTests {
         assertTrue(gameID > 0, "Game ID should be a positive number");
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// createGame: Fail to create a game (negative test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // createGame: Fail to create a game (negative test case)
     @Test
     @DisplayName("Fail to create a game with invalid input")
     void testCreateGameFailure() {
@@ -43,9 +39,7 @@ public class GameServiceTests {
         assertEquals("Error: Invalid game data", thrown.getMessage());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// listGames: Successfully list all games (positive test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // listGames: Successfully list all games (positive test case)
     @Test
     @DisplayName("Successfully list all games")
     void testListGamesSuccess() throws DataAccessException {
@@ -56,9 +50,7 @@ public class GameServiceTests {
         assertEquals(2, games.size(), "Should return exactly 2 games");
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// listGames: Handle case when no games exist (negative test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // listGames: Handle case when no games exist (negative test case)
     @Test
     @DisplayName("List games when no games exist")
     void testListGamesEmpty() throws DataAccessException {
@@ -66,9 +58,7 @@ public class GameServiceTests {
         assertEquals(0, games.size(), "Game list should be empty");
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// getGame: Successfully retrieve a game (positive test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // getGame: Successfully retrieve a game (positive test case)
     @Test
     @DisplayName("Successfully retrieve an existing game")
     void testGetGameSuccess() throws DataAccessException {
@@ -79,9 +69,7 @@ public class GameServiceTests {
         assertEquals("Chess Match", game.gameName(), "Game name should match");
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// getGame: Fail to retrieve a non-existent game (negative test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // getGame: Fail to retrieve a non-existent game (negative test case)
     @Test
     @DisplayName("Fail to retrieve a non-existent game")
     void testGetGameFailure() {
@@ -91,9 +79,7 @@ public class GameServiceTests {
         assertEquals("Error: Game not found", thrown.getMessage());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// updateGame: Successfully update a game (positive test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // updateGame: Successfully update a game (positive test case)
     @Test
     @DisplayName("Successfully update a game")
     void testUpdateGameSuccess() throws DataAccessException {
@@ -106,9 +92,7 @@ public class GameServiceTests {
         assertEquals("New Game Name", retrievedGame.gameName(), "Game name should be updated");
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// updateGame: Fail to update a non-existent game (negative test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // updateGame: Fail to update a non-existent game (negative test case)
     @Test
     @DisplayName("Fail to update a non-existent game")
     void testUpdateGameFailure() {
@@ -120,9 +104,7 @@ public class GameServiceTests {
         assertEquals("Error: Game not found", thrown.getMessage());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// clear: Successfully clear all games (positive test case)
-    /////////////////////////////////////////////////////////////////////////////////
+    // clear: Successfully clear all games (positive test case)
     @Test
     @DisplayName("Successfully clear all games")
     void testClearGames() throws DataAccessException {

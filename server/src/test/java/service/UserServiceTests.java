@@ -17,10 +17,7 @@ class UserServiceTest {
         userService = new UserService(userDAO);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// createUser: Successfully create a user
-    /////////////////////////////////////////////////////////////////////////////////
-
+    // createUser: Successfully create a user
     @Test
     @DisplayName("Successfully create a user")
     void testCreateUserSuccess() throws DataAccessException {
@@ -35,10 +32,7 @@ class UserServiceTest {
         assertEquals("kenny@gmail.com", storedUser.email());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// createUser: Fail to create duplicate user
-    /////////////////////////////////////////////////////////////////////////////////
-
+    // createUser: Fail to create duplicate user
     @Test
     @DisplayName("Fail to create duplicate user")
     void testCreateUserFailure() throws DataAccessException {
@@ -50,10 +44,7 @@ class UserServiceTest {
         assertEquals("Error: Username already taken", thrown.getMessage());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// getUser: Successfully get a user
-    /////////////////////////////////////////////////////////////////////////////////
-
+    // getUser: Successfully get a user
     @Test
     @DisplayName("Successfully get a user")
     void testGetUserSuccess() throws DataAccessException {
@@ -66,10 +57,7 @@ class UserServiceTest {
         assertEquals("kenny", retrievedUser.username());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// getUser: Fail to get non-existent user
-    /////////////////////////////////////////////////////////////////////////////////
-
+    // getUser: Fail to get non-existent user
     @Test
     @DisplayName("Fail to get non-existent user")
     void testGetUserFailure() {
@@ -77,10 +65,7 @@ class UserServiceTest {
         assertEquals("Error: User not found", thrown.getMessage());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// clear: Successfully clear userData database
-    /////////////////////////////////////////////////////////////////////////////////
-
+    // clear: Successfully clear userData database
     @Test
     @DisplayName("Successfully clear userData database")
     void testClearUsers() throws DataAccessException {

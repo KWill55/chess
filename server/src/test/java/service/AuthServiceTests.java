@@ -16,9 +16,7 @@ class AuthServiceTest {
         authService = new AuthService(authDAO);
     }
 
-    /// //////////////////////////////////////////////////////////////////////////////
-    /// createAuth: Successfully create an auth token
-    /// //////////////////////////////////////////////////////////////////////////////
+    //createAuth: Successfully create an auth token
     @Test
     @DisplayName("Successfully create an auth token")
     void testCreateAuthSuccess() throws DataAccessException {
@@ -33,9 +31,7 @@ class AuthServiceTest {
         assertEquals(username, storedAuth.username());
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    /// createAuth: Fail to create an auth token for a null username
-    ///////////////////////////////////////////////////////////////////////////////
+    // createAuth: Fail to create an auth token for a null username
     @Test
     @DisplayName("Fail to create an auth token for a null username")
     void testCreateAuthFailure() {
@@ -50,10 +46,7 @@ class AuthServiceTest {
         assertEquals("Error: Auth token cannot be null", thrown.getMessage());
     }
 
-
-    /// //////////////////////////////////////////////////////////////////////////////
-    /// getAuth: Successfully retrieve an existing auth token
-    /// //////////////////////////////////////////////////////////////////////////////
+    // getAuth: Successfully retrieve an existing auth token
     @Test
     @DisplayName("Successfully retrieve an existing auth token")
     void testGetAuthSuccess() throws DataAccessException {
@@ -67,9 +60,7 @@ class AuthServiceTest {
         assertEquals(username, retrievedAuth.username());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// getAuth: Fail to retrieve a non-existent auth token
-    /////////////////////////////////////////////////////////////////////////////////
+    // getAuth: Fail to retrieve a non-existent auth token
     @Test
     @DisplayName("Fail to retrieve a non-existent auth token")
     void testGetAuthFailure() {
@@ -84,9 +75,7 @@ class AuthServiceTest {
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// deleteAuth: Successfully delete an auth token
-    /////////////////////////////////////////////////////////////////////////////////
+    // deleteAuth: Successfully delete an auth token
     @Test
     @DisplayName("Successfully delete an auth token")
     void testDeleteAuthSuccess() throws DataAccessException {
@@ -101,9 +90,7 @@ class AuthServiceTest {
         assertEquals("Error: authToken not found", thrown.getMessage());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// deleteAuth: Fail to delete a non-existent auth token
-    /////////////////////////////////////////////////////////////////////////////////
+    // deleteAuth: Fail to delete a non-existent auth token
     @Test
     @DisplayName("Fail to delete a non-existent auth token")
     void testDeleteAuthFailure() {
@@ -111,9 +98,7 @@ class AuthServiceTest {
         assertEquals("Error: authToken not found", thrown.getMessage());
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /// clear: Successfully clear all auth data
-    /////////////////////////////////////////////////////////////////////////////////
+    // clear: Successfully clear all auth data
     @Test
     @DisplayName("Successfully clear all auth data")
     void testClearAuth() throws DataAccessException {
