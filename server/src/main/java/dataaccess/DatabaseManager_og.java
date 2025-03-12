@@ -3,7 +3,7 @@ package dataaccess;
 import java.sql.*;
 import java.util.Properties;
 
-public class DatabaseManager {
+public class DatabaseManager_og {
     private static final String DATABASE_NAME;
     private static final String USER;
     private static final String PASSWORD;
@@ -27,6 +27,9 @@ public class DatabaseManager {
                 var host = props.getProperty("db.host");
                 var port = Integer.parseInt(props.getProperty("db.port"));
                 CONNECTION_URL = String.format("jdbc:mysql://%s:%d", host, port);
+
+                Class.forName("com.mysql.cj.jdbc.Driver");
+
             }
         } catch (Exception ex) {
             throw new RuntimeException("unable to process db.properties. " + ex.getMessage());
@@ -69,4 +72,19 @@ public class DatabaseManager {
             throw new DataAccessException(e.getMessage());
         }
     }
+
+
+
+
+    public static void main(String []args) throws Exception {
+        try (var conn = DatabaseManager_og.getConnection()) { // Get MySQL connection
+            try (var preparedStatement = conn.prepareStatement("SELECT 1+1")) { // Prepare SQL query
+                var rs = preparedStatement.executeQuery(); // Execute query
+                rs.next(); // Move to first result row
+                System.out.println(rs.getInt(1)); // Print result (should be 2)
+            }
+        }
+    }
+
+
 }
