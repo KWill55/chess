@@ -51,7 +51,7 @@ public class SQLUserDAOTests {
     }
 
     @Test
-    @DisplayName("Create User - Duplicate Username")
+    @DisplayName("Create User - Fail (Duplicate Username)")
     public void testCreateUserDuplicate() throws DataAccessException {
         UserData user = new UserData("testUser", "password123", "test@example.com");
         userDAO.createUser(user);
@@ -60,10 +60,34 @@ public class SQLUserDAOTests {
         assertEquals("Error: Username already taken", ex.getMessage());
     }
 
+
     @Test
-    @DisplayName("Get User - Non-existent User")
+    @DisplayName("Get User - Success")
+    public void testGetUserSuccess() throws DataAccessException {
+        // Create a new user in the database.
+        UserData user = new UserData("testUser", "password123", "test@gmail.com");
+        userDAO.createUser(user);
+
+        // Retrieve the user from the database.
+        UserData retrievedUser = userDAO.getUser("testUser");
+
+        // Verify that the retrieved user is not null.
+        assertNotNull(retrievedUser, "Expected a valid user to be returned");
+
+        // Check that the username and email match.
+        assertEquals(user.username(), retrievedUser.username(), "Usernames should match");
+        assertEquals(user.email(), retrievedUser.email(), "Emails should match");
+
+        // Since the password is hashed, verify the password using BCrypt.
+        assertTrue(org.mindrot.jbcrypt.BCrypt.checkpw("password123", retrievedUser.password()),
+                "The stored password hash should match the original password");
+    }
+
+
+    @Test
+    @DisplayName("Get User - Fail (Non-existent User)")
     public void testGetUserNonExistent() throws DataAccessException {
-        // In our SQL DAO we return null if a user is not found.
+        // return null if a user is not found.
         UserData retrieved = userDAO.getUser("nonExistent");
         assertNull(retrieved, "Expected null for a non-existent user");
     }
