@@ -20,7 +20,9 @@ public abstract class AbstractSlidingMovesCalculator implements PieceMovesCalcul
                 col += direction[1];
                 ChessPosition newInternalPos = new ChessPosition(row, col);
                 ChessPosition newPos = board.toChessFormat(newInternalPos);
-                if (!board.isWithinBounds(newPos)) break;
+                if (!board.isWithinBounds(newPos)) {
+                    break;
+                }
                 ChessMove move = new ChessMove(position, newPos, null);
                 ChessPiece currentPiece = board.getPiece(position);
                 ChessPiece encountered = board.getPiece(newPos);
