@@ -2,6 +2,7 @@ package handler;
 
 import model.LoginRequest;
 import model.LoginResponse;
+import org.mindrot.jbcrypt.BCrypt;
 import service.AuthService;
 import service.UserService;
 import spark.Request;
@@ -60,7 +61,7 @@ public class LoginHandler extends BaseHandler<LoginRequest> {
             var user = userService.getUser(request.username());
 
             // If user is not found or password does not match, return 401 Unauthorized
-            if (user == null || !user.password().equals(request.password())) {
+            if (user == null || !BCrypt.checkpw(request.password(), user.password())) {
                 res.status(401);
                 return gson.toJson(Map.of("message", "Error: Unauthorized"));
             }

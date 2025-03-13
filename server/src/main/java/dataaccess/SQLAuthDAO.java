@@ -5,26 +5,46 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
-public class SQLAuthDAO extends InMemoryAuthDAO {
+public class SQLAuthDAO implements AuthDAO {
 
     /**
-     * Stores an authentication token in the database.
+     * Creates and stores a new authentication token in the database.
      *
-     * @param auth The AuthData object containing the token and associated username.
+     * @param auth The AuthData object containing the username.
      */
+    @Override
     public void createAuth(AuthData auth) throws DataAccessException {
-        String sql = "INSERT INTO AuthTokens (authToken, username) VALUES (?, ?)";
+        if (auth == null || auth.username() == null) {
+            throw new DataAccessException("Invalid auth data");
+        }
 
+        // If the incoming AuthData doesn't have a token, generate one
+        String token = auth.authToken();
+        if (token == null) {
+            token = UUID.randomUUID().toString();
+        }
+
+        // Insert into database
+        String insertSql = "INSERT INTO AuthTokens (authToken, username) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, auth.authToken());
+             PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+
+            stmt.setString(1, token);
             stmt.setString(2, auth.username());
-            stmt.executeUpdate();
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new DataAccessException("Error: Auth token was not inserted");
+            }
+
+            System.out.println("DEBUG: Inserted authToken: " + token + " for user: " + auth.username());
         } catch (SQLException e) {
             throw new DataAccessException("Error inserting auth token: " + e.getMessage());
         }
     }
+
+
 
     /**
      * Retrieves authentication data based on the provided auth token.
@@ -32,24 +52,27 @@ public class SQLAuthDAO extends InMemoryAuthDAO {
      * @param authToken The authentication token.
      * @return The AuthData object containing the username.
      */
+    @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
-        String sql = "SELECT * FROM AuthTokens WHERE authToken = ?";
+        String sql = "SELECT username FROM AuthTokens WHERE authToken = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setString(1, authToken);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return new AuthData(
-                        rs.getString("authToken"),
-                        rs.getString("username")
-                );
+                String username = rs.getString("username");
+                System.out.println("DEBUG: Retrieved auth for " + username);
+                return new AuthData(authToken, username);
+            } else {
+                System.out.println("DEBUG: Auth token not found: " + authToken);
+                throw new DataAccessException("Error: Auth token not found");
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error retrieving auth token: " + e.getMessage());
         }
-        return null;
     }
 
     /**
@@ -57,13 +80,21 @@ public class SQLAuthDAO extends InMemoryAuthDAO {
      *
      * @param authToken The authentication token to remove.
      */
+    @Override
     public void deleteAuth(String authToken) throws DataAccessException {
         String sql = "DELETE FROM AuthTokens WHERE authToken = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, authToken);
-            stmt.executeUpdate();
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new DataAccessException("Error: Auth token not found for deletion");
+            }
+
+            System.out.println("DEBUG: Deleted authToken: " + authToken);
+
         } catch (SQLException e) {
             throw new DataAccessException("Error deleting auth token: " + e.getMessage());
         }
@@ -72,12 +103,14 @@ public class SQLAuthDAO extends InMemoryAuthDAO {
     /**
      * Clears all authentication tokens from the database.
      */
+    @Override
     public void clear() throws DataAccessException {
-        String sql = "DELETE FROM AuthTokens";
+        String sql = "DELETE FROM AuthTokens"; // Only clears auth tokens, not users
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.executeUpdate();
+            int rowsDeleted = stmt.executeUpdate();
+            System.out.println("DEBUG: Auth table cleared. Rows deleted: " + rowsDeleted);
         } catch (SQLException e) {
             throw new DataAccessException("Error clearing auth tokens: " + e.getMessage());
         }

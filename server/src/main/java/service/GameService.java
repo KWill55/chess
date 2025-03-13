@@ -1,7 +1,6 @@
 package service;
 
 import dataaccess.GameDAO;
-import dataaccess.InMemoryGameDAO;
 import dataaccess.DataAccessException;
 import model.GameData;
 import chess.*;

@@ -13,8 +13,8 @@ public class Main {
         System.out.println("♕ 240 Chess Server: " + piece);
         boolean useMySQL = true;  // Change this to false for in-memory storage
 
-        AuthDAO authDAO = new SQLAuthDAO();
         UserDAO userDAO = new SQLUserDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
         GameDAO gameDAO = new SQLGameDAO();
 
         UserService userService = new UserService(userDAO);

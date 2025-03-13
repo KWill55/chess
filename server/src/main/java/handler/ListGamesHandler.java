@@ -81,7 +81,7 @@ public class ListGamesHandler extends BaseHandler<Void> {
             if (e.getMessage().contains("authToken not found")) {
                 res.status(401); // Unauthorized: Auth token does not exist in database
             } else {
-                res.status(403); // Forbidden: Other database issues
+                res.status(401); // Forbidden: Other database issues
             }
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
