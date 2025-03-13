@@ -9,11 +9,6 @@ import java.util.UUID;
 
 public class SQLAuthDAO implements AuthDAO {
 
-    /**
-     * Creates and stores a new authentication token in the database.
-     *
-     * @param auth The AuthData object containing the username.
-     */
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
         if (auth == null || auth.username() == null) {
@@ -44,14 +39,6 @@ public class SQLAuthDAO implements AuthDAO {
         }
     }
 
-
-
-    /**
-     * Retrieves authentication data based on the provided auth token.
-     *
-     * @param authToken The authentication token.
-     * @return The AuthData object containing the username.
-     */
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
         String sql = "SELECT username FROM AuthTokens WHERE authToken = ?";
@@ -75,11 +62,6 @@ public class SQLAuthDAO implements AuthDAO {
         }
     }
 
-    /**
-     * Deletes an authentication token.
-     *
-     * @param authToken The authentication token to remove.
-     */
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
         String sql = "DELETE FROM AuthTokens WHERE authToken = ?";
@@ -100,9 +82,6 @@ public class SQLAuthDAO implements AuthDAO {
         }
     }
 
-    /**
-     * Clears all authentication tokens from the database.
-     */
     @Override
     public void clear() throws DataAccessException {
         String sql = "DELETE FROM AuthTokens"; // Only clears auth tokens, not users
