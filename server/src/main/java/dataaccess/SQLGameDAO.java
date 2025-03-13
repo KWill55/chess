@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SQLGameDAO implements GameDAO {
-    private static final Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
+
 
     /**
      * Creates a new game in the database and returns its game ID.
@@ -34,7 +35,7 @@ public class SQLGameDAO implements GameDAO {
             stmt.setString(3, game.blackUsername());
 
             // Convert ChessGame object to JSON string for storage
-            String gameJson = gson.toJson(game.game());
+            String gameJson = GSON.toJson(game.game());
             stmt.setString(4, gameJson);
 
             int affectedRows = stmt.executeUpdate();
@@ -73,7 +74,7 @@ public class SQLGameDAO implements GameDAO {
 
             if (rs.next()) {
                 // Convert JSON string back to ChessGame object
-                ChessGame chessGame = gson.fromJson(rs.getString("gameState"), ChessGame.class);
+                ChessGame chessGame = GSON.fromJson(rs.getString("gameState"), ChessGame.class);
 
                 return new GameData(
                         rs.getInt("gameID"),
@@ -109,7 +110,7 @@ public class SQLGameDAO implements GameDAO {
             stmt.setString(3, game.blackUsername());
 
             // Convert ChessGame object to JSON for storage
-            String gameJson = gson.toJson(game.game());
+            String gameJson = GSON.toJson(game.game());
             stmt.setString(4, gameJson);
             stmt.setInt(5, game.gameID());
 
@@ -140,7 +141,7 @@ public class SQLGameDAO implements GameDAO {
 
             while (rs.next()) {
                 // Convert JSON to ChessGame
-                ChessGame chessGame = gson.fromJson(rs.getString("gameState"), ChessGame.class);
+                ChessGame chessGame = GSON.fromJson(rs.getString("gameState"), ChessGame.class);
 
                 games.add(new GameData(
                         rs.getInt("gameID"),

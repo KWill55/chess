@@ -15,7 +15,7 @@ import java.util.List;
 
 public class SQLGameDAOTests {
     private SQLGameDAO gameDAO;
-    private static final Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
 
     @BeforeEach
     public void setUp() throws DataAccessException {
@@ -68,7 +68,7 @@ public class SQLGameDAOTests {
         assertEquals("Chess Match", retrieved.gameName());
         assertEquals("whiteUser", retrieved.whiteUsername());
         assertEquals("blackUser", retrieved.blackUsername());
-        assertEquals(gson.toJson(chessGame), gson.toJson(retrieved.game()));
+        assertEquals(GSON.toJson(chessGame), GSON.toJson(retrieved.game()));
     }
 
     @Test
