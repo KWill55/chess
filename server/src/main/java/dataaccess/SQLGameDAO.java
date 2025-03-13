@@ -7,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLGameDAO {
+public class SQLGameDAO implements GameDAO {
     private static final Gson gson = new Gson();
 
     /**
@@ -83,7 +83,7 @@ public class SQLGameDAO {
      * @return A list of all games.
      * @throws DataAccessException If the database operation fails.
      */
-    public List<GameData> getAllGames() throws DataAccessException {
+    public List<GameData> listGames() throws DataAccessException {
         List<GameData> games = new ArrayList<>();
         String sql = "SELECT * FROM Games";
 
@@ -107,5 +107,54 @@ public class SQLGameDAO {
             throw new DataAccessException("Error retrieving games: " + e.getMessage());
         }
         return games;
+    }
+
+    /**
+     * Updates an existing game in the database.
+     *
+     * @param game The updated GameData object containing new details.
+     * @throws DataAccessException If the database update fails.
+     */
+    @Override
+    public void updateGame(GameData game) throws DataAccessException {
+        String sql = "UPDATE Games SET whiteUsername = ?, blackUsername = ?, gameName = ?, gameState = ? WHERE gameID = ?";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, game.whiteUsername());
+            stmt.setString(2, game.blackUsername());
+            stmt.setString(3, game.gameName());
+
+            // Convert ChessGame object to JSON string
+            String gameJson = gson.toJson(game.game());
+            stmt.setString(4, gameJson);
+            stmt.setInt(5, game.gameID());
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new DataAccessException("Error: Game not found or not updated.");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error updating game: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Clears all game records from the database.
+     *
+     * @throws DataAccessException If the database operation fails.
+     */
+    @Override
+    public void clear() throws DataAccessException {
+        String sql = "DELETE FROM Games";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Error clearing games: " + e.getMessage());
+        }
     }
 }
