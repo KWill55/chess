@@ -1,6 +1,6 @@
 package service;
 
-import dataaccess.AuthDAO;
+import dataaccess.InMemoryAuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import org.junit.jupiter.api.*;
@@ -8,12 +8,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AuthServiceTest {
     private AuthService authService;
-    private AuthDAO authDAO;
+    private InMemoryAuthDAO inMemoryAuthDAO;
 
     @BeforeEach
     void setUp() {
-        authDAO = new AuthDAO();  // Creates a new AuthDAO for each test
-        authService = new AuthService(authDAO);
+        inMemoryAuthDAO = new InMemoryAuthDAO();  // Creates a new AuthDAO for each test
+        authService = new AuthService(inMemoryAuthDAO);
     }
 
     //createAuth: Successfully create an auth token
@@ -40,7 +40,7 @@ class AuthServiceTest {
 
         // make sure that exception is thrown when creating invalid Auth Data
         DataAccessException thrown = assertThrows(DataAccessException.class, () -> {
-            authDAO.createAuth(invalidAuthData);
+            inMemoryAuthDAO.createAuth(invalidAuthData);
         });
 
         assertEquals("Error: Auth token cannot be null", thrown.getMessage());

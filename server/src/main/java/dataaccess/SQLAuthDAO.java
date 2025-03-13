@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SQLAuthDAO {
+public class SQLAuthDAO extends InMemoryAuthDAO {
 
     /**
      * Stores an authentication token in the database.
