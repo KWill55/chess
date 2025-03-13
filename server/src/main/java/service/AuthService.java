@@ -1,6 +1,6 @@
 package service;
 
-import dataaccess.SQLAuthDAO;
+import dataaccess.AuthDAO;
 import model.AuthData;
 import dataaccess.DataAccessException;
 import java.util.UUID;
@@ -10,13 +10,13 @@ import java.util.UUID;
  * This class acts as an intermediary between the API handlers and the AuthDAO.
  */
 public class AuthService {
-    private final SQLAuthDAO authDAO; // DAO responsible for authentication data storage and retrieval
+    private final AuthDAO authDAO; // DAO responsible for authentication data storage and retrieval
 
     /**
      * Constructor for AuthService.
      * @param authDAO The data access object responsible for authentication management.
      */
-    public AuthService(SQLAuthDAO authDAO) {
+    public AuthService(AuthDAO authDAO) {
         this.authDAO = authDAO;
     }
 

@@ -1,21 +1,21 @@
 package service;
 
-import dataaccess.InMemoryUserDAO;
 import dataaccess.DataAccessException;
+import dataaccess.UserDAO;
 import model.UserData;
 
 /**
  * Service class responsible for handling user-related operations.
  */
 public class UserService {
-    private final InMemoryUserDAO inMemoryUserDAO; // DAO responsible for managing user data
+    private final UserDAO userDAO; // DAO responsible for managing user data
 
     /**
      * Constructor for UserService.
-     * @param inMemoryUserDAO The data access object responsible for user storage and retrieval.
+     * @param userDAO The data access object responsible for user storage and retrieval.
      */
-    public UserService(InMemoryUserDAO inMemoryUserDAO) {
-        this.inMemoryUserDAO = inMemoryUserDAO;
+    public UserService(UserDAO userDAO) {
+        this.userDAO = userDAO;
     }
 
     /**
@@ -25,7 +25,7 @@ public class UserService {
      * @throws DataAccessException If there is an issue creating the user (e.g., username already exists).
      */
     public void createUser(UserData user) throws DataAccessException {
-        inMemoryUserDAO.createUser(user);
+        userDAO.createUser(user);
     }
 
     /**
@@ -36,7 +36,7 @@ public class UserService {
      * @throws DataAccessException If the user does not exist.
      */
     public UserData getUser(String username) throws DataAccessException {
-        return inMemoryUserDAO.getUser(username);
+        return userDAO.getUser(username);
     }
 
     /**
@@ -45,6 +45,6 @@ public class UserService {
      * @throws DataAccessException If there is an issue clearing user data.
      */
     public void clear() throws DataAccessException {
-        inMemoryUserDAO.clear();
+        userDAO.clear();
     }
 }

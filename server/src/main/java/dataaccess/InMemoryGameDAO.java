@@ -7,11 +7,12 @@ public class InMemoryGameDAO implements GameDAO {
     private final Map<Integer, GameData> games = new HashMap<>();
 
     @Override
-    public void createGame(GameData game) throws DataAccessException {
+    public int createGame(GameData game) throws DataAccessException {
         if (games.containsKey(game.gameID())) {
             throw new DataAccessException("Error: Game ID already exists.");
         }
         games.put(game.gameID(), game);
+        return game.gameID();
     }
 
     @Override

@@ -1,87 +1,111 @@
 package dataaccess;
 
+import com.google.gson.Gson;
 import model.GameData;
+import chess.ChessGame;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLGameDAO implements GameDAO {
-    @Override
-    public void createGame(GameData game) throws DataAccessException {
-        String statement = "INSERT INTO games (gameID, gameName, gameData) VALUES (?, ?, ?)";
+public class SQLGameDAO {
+    private static final Gson gson = new Gson();
+
+    /**
+     * Creates a new game in the database.
+     *
+     * @param game The GameData object containing game details.
+     * @return The generated game ID.
+     * @throws DataAccessException If the database operation fails.
+     */
+    public int createGame(GameData game) throws DataAccessException {
+        String sql = "INSERT INTO Games (gameName, whiteUsername, blackUsername, gameState) VALUES (?, ?, ?, ?)";
+
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
-            stmt.setInt(1, game.gameID());
-            stmt.setString(2, game.gameName());
-            stmt.setString(3, game.gameData()); // Assuming gameData is stored as a JSON string
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setString(1, game.gameName());
+            stmt.setString(2, game.whiteUsername());
+            stmt.setString(3, game.blackUsername());
+
+            // Convert ChessGame object to JSON string
+            String gameJson = gson.toJson(game.game());
+            stmt.setString(4, gameJson);
+
             stmt.executeUpdate();
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1); // Return generated gameID
+            } else {
+                throw new DataAccessException("Error: Game ID not generated.");
+            }
         } catch (SQLException e) {
             throw new DataAccessException("Error inserting game: " + e.getMessage());
         }
     }
 
-    @Override
+    /**
+     * Retrieves a game by its game ID.
+     *
+     * @param gameID The unique identifier of the game.
+     * @return The GameData object representing the game.
+     * @throws DataAccessException If the game retrieval fails.
+     */
     public GameData getGame(int gameID) throws DataAccessException {
-        String statement = "SELECT * FROM games WHERE gameID = ?";
+        String sql = "SELECT * FROM Games WHERE gameID = ?";
+
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, gameID);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
+                // Convert JSON string back to ChessGame object
+                ChessGame chessGame = gson.fromJson(rs.getString("gameState"), ChessGame.class);
+
                 return new GameData(
                         rs.getInt("gameID"),
+                        rs.getString("whiteUsername"),
+                        rs.getString("blackUsername"),
                         rs.getString("gameName"),
-                        rs.getString("gameData")
+                        chessGame // Store as object instead of raw JSON
                 );
             }
-            return null;
         } catch (SQLException e) {
             throw new DataAccessException("Error retrieving game: " + e.getMessage());
         }
+        return null;
     }
 
-    @Override
-    public List<GameData> listGames() throws DataAccessException {
+    /**
+     * Retrieves all games from the database.
+     *
+     * @return A list of all games.
+     * @throws DataAccessException If the database operation fails.
+     */
+    public List<GameData> getAllGames() throws DataAccessException {
         List<GameData> games = new ArrayList<>();
-        String statement = "SELECT * FROM games";
+        String sql = "SELECT * FROM Games";
+
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(statement);
+             PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
+
             while (rs.next()) {
+                // Convert JSON to ChessGame
+                ChessGame chessGame = gson.fromJson(rs.getString("gameState"), ChessGame.class);
+
                 games.add(new GameData(
                         rs.getInt("gameID"),
+                        rs.getString("whiteUsername"),
+                        rs.getString("blackUsername"),
                         rs.getString("gameName"),
-                        rs.getString("gameData")
+                        chessGame
                 ));
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error retrieving games: " + e.getMessage());
         }
         return games;
-    }
-
-    @Override
-    public void updateGame(GameData game) throws DataAccessException {
-        String statement = "UPDATE games SET gameName = ?, gameData = ? WHERE gameID = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
-            stmt.setString(1, game.gameName());
-            stmt.setString(2, game.gameData());
-            stmt.setInt(3, game.gameID());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException("Error updating game: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public void clear() throws DataAccessException {
-        String statement = "DELETE FROM games";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException("Error clearing games: " + e.getMessage());
-        }
     }
 }
