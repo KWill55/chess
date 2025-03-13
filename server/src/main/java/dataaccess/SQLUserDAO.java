@@ -6,14 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SQLUserDAO {
+public class SQLUserDAO implements UserDAO {
 
-    /**
-     * Creates a new user in the database.
-     *
-     * @param user The UserData object containing user details.
-     * @throws DataAccessException If the username already exists or the query fails.
-     */
+    @Override
     public void createUser(UserData user) throws DataAccessException {
         String sql = "INSERT INTO Users (username, password, email) VALUES (?, ?, ?)";
 
@@ -28,13 +23,7 @@ public class SQLUserDAO {
         }
     }
 
-    /**
-     * Retrieves a user by their username.
-     *
-     * @param username The username of the user.
-     * @return The UserData object if found, otherwise null.
-     * @throws DataAccessException If a database error occurs.
-     */
+    @Override
     public UserData getUser(String username) throws DataAccessException {
         String sql = "SELECT * FROM Users WHERE username = ?";
 
@@ -56,9 +45,7 @@ public class SQLUserDAO {
         return null;
     }
 
-    /**
-     * Clears all users from the database.
-     */
+    @Override
     public void clear() throws DataAccessException {
         String sql = "DELETE FROM Users";
 
@@ -70,4 +57,3 @@ public class SQLUserDAO {
         }
     }
 }
-

@@ -1,6 +1,6 @@
 package service;
 
-import dataaccess.UserDAO;
+import dataaccess.InMemoryUserDAO;
 import dataaccess.DataAccessException;
 import model.UserData;
 import org.junit.jupiter.api.*;
@@ -9,12 +9,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceTest {
     private UserService userService;
-    private UserDAO userDAO;
+    private InMemoryUserDAO inMemoryUserDAO;
 
     @BeforeEach
     void setUp() {
-        userDAO = new UserDAO();  // Creates a fresh UserDAO for each test
-        userService = new UserService(userDAO);
+        inMemoryUserDAO = new InMemoryUserDAO();  // Creates a fresh UserDAO for each test
+        userService = new UserService(inMemoryUserDAO);
     }
 
     // createUser: Successfully create a user

@@ -14,12 +14,12 @@ public class Main {
         boolean useMySQL = true;  // Change this to false for in-memory storage
 
         AuthDAO authDAO = useMySQL ? new SQLAuthDAO() : new InMemoryAuthDAO();
-        UserDAO userDAO = useMySQL ? new SQLUserDAO() : new InMemoryUserDAO();
-        GameDAO gameDAO = useMySQL ? new SQLGameDAO() : new InMemoryGameDAO();
+        InMemoryUserDAO inMemoryUserDAO = useMySQL ? new SQLUserDAO() : new InMemoryUserDAO();
+        InMemoryGameDAO inMemoryGameDAO = useMySQL ? new SQLGameDAO() : new InMemoryGameDAO();
 
-        UserService userService = new UserService(userDAO);
+        UserService userService = new UserService(inMemoryUserDAO);
         AuthService authService = new AuthService(authDAO);
-        GameService gameService = new GameService(gameDAO);
+        GameService gameService = new GameService(inMemoryGameDAO);
 
         Server server = new Server(userService, authService, gameService);
         server.run(8080);

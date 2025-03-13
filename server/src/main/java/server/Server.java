@@ -1,11 +1,11 @@
 package server;
 
-import dataaccess.GameDAO;
+import dataaccess.InMemoryGameDAO;
 import handler.*;
 import service.UserService;
 import service.AuthService;
 import service.GameService;
-import dataaccess.UserDAO;
+import dataaccess.InMemoryUserDAO;
 import dataaccess.InMemoryAuthDAO;
 import spark.*;
 
@@ -23,14 +23,14 @@ public class Server {
      */
     public Server() {
         // Instantiate DAO (Data Access Object) components for user, auth, and game data management
-        UserDAO userDAO = new UserDAO();
+        InMemoryUserDAO inMemoryUserDAO = new InMemoryUserDAO();
         InMemoryAuthDAO inMemoryAuthDAO = new InMemoryAuthDAO();
-        GameDAO gameDAO = new GameDAO();
+        InMemoryGameDAO inMemoryGameDAO = new InMemoryGameDAO();
 
         // Initialize services, passing DAO dependencies
-        this.userService = new UserService(userDAO);
+        this.userService = new UserService(inMemoryUserDAO);
         this.authService = new AuthService(inMemoryAuthDAO);
-        this.gameService = new GameService(gameDAO);
+        this.gameService = new GameService(inMemoryGameDAO);
     }
 
     /**

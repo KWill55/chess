@@ -1,7 +1,7 @@
 package service;
 
 import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
+import dataaccess.InMemoryGameDAO;
 import model.GameData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +13,12 @@ import java.util.List;
 
 public class GameServiceTests {
     private GameService gameService;
-    private GameDAO gameDAO;
+    private InMemoryGameDAO inMemoryGameDAO;
 
     @BeforeEach
     void setUp() {
-        gameDAO = new GameDAO();
-        gameService = new GameService(gameDAO);
+        inMemoryGameDAO = new InMemoryGameDAO();
+        gameService = new GameService(inMemoryGameDAO);
     }
 
     // createGame: Successfully create a game (positive test case)
