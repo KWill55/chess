@@ -21,12 +21,12 @@ public class ServerFacade {
 
     public RegisterResponse register(String username, String password, String email) throws ResponseException {
         var request = new RegisterRequest(username, password, email);
-        return makeRequest("POST", "/user/register", request, RegisterResponse.class, null);
+        return makeRequest("POST", "/user", request, RegisterResponse.class, null);
     }
 
     public LoginResponse login(String username, String password) throws ResponseException {
         var request = new LoginRequest(username, password);
-        return makeRequest("POST", "/user/login", request, LoginResponse.class, null);
+        return makeRequest("POST", "/session", request, LoginResponse.class, null);
     }
 
     // ---------- Postlogin Methods ----------
@@ -35,29 +35,35 @@ public class ServerFacade {
 
     public LogoutResponse logout(String authToken) throws ResponseException {
         var request = new LogoutRequest(authToken);
-        return makeRequest("POST", "/user/logout", request, LogoutResponse.class, authToken);
+        return makeRequest("DELETE", "/session", request, LogoutResponse.class, authToken);
     }
 
     public CreateGameResponse createGame(String authToken, String gameName) throws ResponseException {
         var request = new CreateGameRequest(authToken, gameName);
-        return makeRequest("POST", "/game/create", request, CreateGameResponse.class, authToken);
+        return makeRequest("POST", "/game", request, CreateGameResponse.class, authToken);
     }
 
     public ListGamesResponse listGames(String authToken) throws ResponseException {
         var request = new ListGamesRequest(authToken);
-        return makeRequest("POST", "/game/list", request, ListGamesResponse.class, authToken);
+        return makeRequest("GET", "/game", request, ListGamesResponse.class, authToken);
     }
 
     //play game
     public JoinGameResponse joinGame(String authToken, int gameID, String playerColor) throws ResponseException {
         var request = new JoinGameRequest(authToken, playerColor, gameID);
-        return makeRequest("POST", "/game/join", request, JoinGameResponse.class, authToken);
+        return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
     }
 
     //observe game
     public JoinGameResponse observeGame(String authToken, int gameID) throws ResponseException {
         var request = new JoinGameRequest(authToken,null, gameID); // null color = observe
-        return makeRequest("POST", "/game/join", request, JoinGameResponse.class, authToken);
+        return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
+    }
+
+    // ---------- Clear Method ----------
+
+    public void clear() throws ResponseException {
+        makeRequest("DELETE", "/db", null, null, null);
     }
 
     // ---------- Request Handling ----------
@@ -67,13 +73,17 @@ public class ServerFacade {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
-            http.setDoOutput(true);
+
+            // Only enable output for POST/PUT/DELETE requests that send a body
+            if (!method.equalsIgnoreCase("GET") && request != null) {
+                http.setDoOutput(true);
+                writeBody(request, http);
+            }
 
             if (authToken != null) {
                 http.setRequestProperty("Authorization", authToken);
             }
 
-            writeBody(request, http);
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
@@ -83,6 +93,7 @@ public class ServerFacade {
             throw new ResponseException(500, ex.getMessage());
         }
     }
+
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {
@@ -118,5 +129,6 @@ public class ServerFacade {
     private boolean isSuccessful(int status) {
         return status / 100 == 2;
     }
+
 }
 
