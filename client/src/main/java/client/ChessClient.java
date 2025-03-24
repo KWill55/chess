@@ -109,7 +109,7 @@ public class ChessClient {
         return "Observing game " + gameID;
     }
 
-    private String help() {
+    public String help() {
         return (state == State.SIGNEDOUT) ? """
                 Available commands:
                 - register <username> <password> <email>

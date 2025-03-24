@@ -1,13 +1,13 @@
-package client;
+package client.websocket;
 
 import webSocketMessages.Notification;
 
 public class ChessNotificationHandler implements NotificationHandler {
-
     @Override
     public void notify(Notification notification) {
-        System.out.println("\n🔔 " + notification.message());
-        System.out.print(">>> ");
+        // Placeholder for now
+        System.out.println("[NOTIFICATION] " + notification.message());
     }
 }
+
 
