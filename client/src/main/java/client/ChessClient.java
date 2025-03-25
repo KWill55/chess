@@ -20,7 +20,7 @@ public class ChessClient {
 
     public String eval(String input) {
         try {
-            var tokens = input.split(" ");
+            var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
 
@@ -34,6 +34,7 @@ public class ChessClient {
                 case "observe" -> observeGame(params);
                 case "quit" -> "quit";
                 case "help" -> help();
+                case "clear" -> clearDatabase();
                 default -> "Unknown command. Type 'help' to see options.";
             };
         } catch (ResponseException ex) {
@@ -62,7 +63,9 @@ public class ChessClient {
     }
 
     private String logout() throws ResponseException {
-        assertSignedIn();
+        if (authToken == null) {
+            throw new ResponseException(400, "Not logged in");
+        }
         server.logout(authToken);
         authToken = null;
         state = State.SIGNEDOUT;
@@ -131,6 +134,12 @@ public class ChessClient {
             throw new ResponseException(401, "You must be logged in.");
         }
     }
+
+    public String clearDatabase() throws ResponseException {
+        server.clear(); // Calls ServerFacade
+        return "Database cleared.";
+    }
+
 
     private enum State {
         SIGNEDOUT,
