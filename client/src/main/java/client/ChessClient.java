@@ -137,7 +137,6 @@ public class ChessClient {
         return this.authToken != null && !this.authToken.isEmpty();
     }
 
-
     private enum State {
         SIGNEDOUT,
         SIGNEDIN

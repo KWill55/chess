@@ -7,5 +7,5 @@ package model;
  * @param playerColor The color the player wants to play as ("WHITE" or "BLACK").
  * @param gameID      The unique identifier of the game the player wants to join.
  */
-public record JoinGameRequest(String authToken, String playerColor, int gameID) {
+public record JoinGameRequest(String playerColor, int gameID) {
 }

@@ -38,7 +38,7 @@ public class ServerFacade {
     }
 
     public CreateGameResponse createGame(String authToken, String gameName) throws ResponseException {
-        var request = new CreateGameRequest(authToken, gameName); // Don't include authToken in the request body
+        var request = new CreateGameRequest(gameName); // ONLY the game name
         return makeRequest("POST", "/game", request, CreateGameResponse.class, authToken);
     }
 
@@ -50,13 +50,13 @@ public class ServerFacade {
 
     //play game
     public JoinGameResponse joinGame(String authToken, int gameID, String playerColor) throws ResponseException {
-        var request = new JoinGameRequest(authToken, playerColor, gameID);
+        var request = new JoinGameRequest(playerColor, gameID);
         return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
     }
 
     //observe game
     public JoinGameResponse observeGame(String authToken, int gameID) throws ResponseException {
-        var request = new JoinGameRequest(authToken,null, gameID); // null color = observe
+        var request = new JoinGameRequest(null, gameID); // null color = observe
         return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
     }
 
@@ -76,6 +76,8 @@ public class ServerFacade {
             System.out.println("[DEBUG] AuthToken: " + authToken);
             System.out.println("[DEBUG] Request body: " + new Gson().toJson(request));
 
+            System.out.println("[DEBUG] Actual request body being sent: " + new Gson().toJson(request));
+
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
 
@@ -91,9 +93,11 @@ public class ServerFacade {
 
             http.connect();
             throwIfNotSuccessful(http);
+
             return readBody(http, responseClass);
         } catch (ResponseException ex) {
             throw ex;
+            
         } catch (Exception ex) {
             throw new ResponseException(500, ex.getMessage());
         }
@@ -118,17 +122,24 @@ public class ServerFacade {
                     throw ResponseException.fromJson(respErr);
                 }
             }
+
             throw new ResponseException(status, "other failure: " + status);
         }
     }
 
-    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
-        if (responseClass == null || http.getContentLength() == 0) return null;
 
-        try (InputStream respBody = http.getInputStream()) {
-            InputStreamReader reader = new InputStreamReader(respBody);
-            return new Gson().fromJson(reader, responseClass);
+
+    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
+        T response = null;
+        if (http.getContentLength() < 0) {
+            try (InputStream respBody = http.getInputStream()) {
+                InputStreamReader reader = new InputStreamReader(respBody);
+                if (responseClass != null) {
+                    response = new Gson().fromJson(reader, responseClass);
+                }
+            }
         }
+        return response;
     }
 
     private boolean isSuccessful(int status) {
