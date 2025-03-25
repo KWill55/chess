@@ -76,19 +76,18 @@ public class ServerFacade {
             System.out.println("[DEBUG] AuthToken: " + authToken);
             System.out.println("[DEBUG] Request body: " + new Gson().toJson(request));
 
-            System.out.println("[DEBUG] Actual request body being sent: " + new Gson().toJson(request));
-
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
 
-            // Only enable output for POST/PUT/DELETE requests that send a body
+            // Set the auth token header BEFORE writing the body.
+            if (authToken != null) {
+                http.setRequestProperty("Authorization", authToken);
+            }
+
+            // Only enable output for methods that send a body (POST, PUT, DELETE)
             if (!method.equalsIgnoreCase("GET") && request != null) {
                 http.setDoOutput(true);
                 writeBody(request, http);
-            }
-
-            if (authToken != null) {
-                http.setRequestProperty("Authorization", authToken);
             }
 
             http.connect();
@@ -97,12 +96,10 @@ public class ServerFacade {
             return readBody(http, responseClass);
         } catch (ResponseException ex) {
             throw ex;
-            
         } catch (Exception ex) {
             throw new ResponseException(500, ex.getMessage());
         }
     }
-
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {

@@ -10,11 +10,13 @@ public class ServerFacadeTests {
 
     private static Server server;
     private static ServerFacade facade;
+    // Use an instance field to store the current auth token
+    private String currentAuthToken;
 
     @BeforeAll
     public static void init() {
         server = new Server();
-        var port = server.run(0);
+        var port = server.run(8080);
         System.out.println("Started test HTTP server on " + port);
         facade = new ServerFacade(port);
     }
@@ -22,6 +24,20 @@ public class ServerFacadeTests {
     @BeforeEach
     public void clearServer() throws ResponseException {
         facade.clear();
+        // Reset currentAuthToken between tests.
+        currentAuthToken = null;
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (currentAuthToken != null) {
+            try {
+                facade.logout(currentAuthToken);
+            } catch (ResponseException e) {
+                // Optionally log the error; not failing the test on tearDown issues.
+                System.out.println("Error during logout: " + e.getMessage());
+            }
+        }
     }
 
     @AfterAll
@@ -36,6 +52,8 @@ public class ServerFacadeTests {
         var response = facade.register("kenny", "myPassword", "kenny@gmail.com");
         assertNotNull(response.authToken());
         assertEquals("kenny", response.username());
+        // Store token for tearDown cleanup
+        currentAuthToken = response.authToken();
     }
 
     @Test
@@ -53,6 +71,7 @@ public class ServerFacadeTests {
         facade.register("kayla", "kayla_password", "kayla@gmail.com");
         var response = facade.login("kayla", "kayla_password");
         assertNotNull(response.authToken());
+        currentAuthToken = response.authToken();
     }
 
     @Test
@@ -87,9 +106,13 @@ public class ServerFacadeTests {
 
     @Test
     void createGame_validAuth_success() throws Exception {
-        var regResponse = facade.register("gameUser", "password", "gameUser@gmail.com");
-        String authToken = regResponse.authToken();
-        var createResponse = facade.createGame(authToken, "TestGame");
+        // Generate a unique username using System.nanoTime()
+        String uniqueUsername = "gameUser" + System.nanoTime();
+        var regResponse = facade.register(uniqueUsername, "password", uniqueUsername + "@example.com");
+        currentAuthToken = regResponse.authToken();
+
+        // Now create a game using this new user.
+        var createResponse = facade.createGame(currentAuthToken, "TestGame");
         assertTrue(createResponse.gameID() > 0);
     }
 
@@ -106,6 +129,7 @@ public class ServerFacadeTests {
     void listGames_validAuth_success() throws Exception {
         var regResponse = facade.register("listUser", "password", "listUser@gmail.com");
         String authToken = regResponse.authToken();
+        currentAuthToken = authToken;
         // Initially the list should be empty
         ListGamesResponse listResponse = facade.listGames(authToken);
         assertNotNull(listResponse.games());
@@ -130,6 +154,7 @@ public class ServerFacadeTests {
     void joinGame_validParams_success() throws Exception {
         var regResponse = facade.register("joinUser", "password", "joinUser@gmail.com");
         String authToken = regResponse.authToken();
+        currentAuthToken = authToken;
         // Create a game first
         CreateGameResponse createResponse = facade.createGame(authToken, "JoinableGame");
         int gameID = createResponse.gameID();
@@ -142,6 +167,7 @@ public class ServerFacadeTests {
     void joinGame_nonexistentGame_fails() throws Exception {
         var regResponse = facade.register("joinFailUser", "password", "joinFailUser@gmail.com");
         String authToken = regResponse.authToken();
+        currentAuthToken = authToken;
         // Use a gameID that doesn't exist (e.g., 9999)
         assertThrows(ResponseException.class, () -> {
             facade.joinGame(authToken, 9999, "WHITE");
@@ -155,40 +181,16 @@ public class ServerFacadeTests {
         });
     }
 
-    // ---------- Observe Game Tests ----------
-
-//    @Test
-//    void observeGame_validParams_success() throws Exception {
-//        var regResponse = facade.register("observeUser", "password", "observeUser@gmail.com");
-//        String authToken = regResponse.authToken();
-//        // Create a game to observe
-//        CreateGameResponse createResponse = facade.createGame(authToken, "ObservableGame");
-//        int gameID = createResponse.gameID();
-//        JoinGameResponse observeResponse = facade.observeGame(authToken, gameID);
-//        assertNotNull(observeResponse);
-//    }
-
-//    @Test
-//    void observeGame_nonexistentGame_fails() throws Exception {
-//        var regResponse = facade.register("observeFailUser", "password", "observeFailUser@gmail.com");
-//        String authToken = regResponse.authToken();
-//        // Attempt to observe a game that doesn't exist
-//        assertThrows(ResponseException.class, () -> {
-//            facade.observeGame(authToken, 9999);
-//        });
-//    }
-
     // ---------- Clear Tests ----------
 
     @Test
     void clear_success() throws Exception {
-        // Register, create a game, then clear the database
         var regResponse = facade.register("clearUser", "password", "clearUser@gmail.com");
         String authToken = regResponse.authToken();
+        currentAuthToken = authToken;
         facade.createGame(authToken, "GameToClear");
         facade.clear();
         ListGamesResponse listResponse = facade.listGames(authToken);
-        // Expect the game list to be empty after clearing
         assertEquals(0, listResponse.games().size());
     }
 }
