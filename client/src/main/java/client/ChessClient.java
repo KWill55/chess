@@ -74,13 +74,15 @@ public class ChessClient {
     }
 
     public String createGame(String... params) throws ResponseException {
-        assertSignedIn();
         if (params.length != 1) {
-            throw new ResponseException(400, "Usage: createGame <gameName>");
+            throw new ResponseException(400, "Expected: createGame <gameName>");
         }
-        var response = server.createGame(authToken, params[0]);
+
+        String gameName = params[0];
+        var response = server.createGame(authToken, gameName);
         return "Game created with ID: " + response.gameID();
     }
+
 
     public String listGames() throws ResponseException {
         assertSignedIn();

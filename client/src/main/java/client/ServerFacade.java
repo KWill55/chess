@@ -33,15 +33,15 @@ public class ServerFacade {
 
     //quit and help don't interact with the server, so are therefore only in repl
 
-    public void logout(String authToken) throws ResponseException {
-        var request = new LogoutRequest(authToken);
-        makeRequest("DELETE", "/session", request, LogoutResponse.class, authToken);
+    public LogoutResponse logout(String authToken) throws ResponseException {
+        return makeRequest("DELETE", "/session", null, LogoutResponse.class, authToken);
     }
 
     public CreateGameResponse createGame(String authToken, String gameName) throws ResponseException {
-        var request = new CreateGameRequest(authToken, gameName);
+        var request = new CreateGameRequest(authToken, gameName); // Don't include authToken in the request body
         return makeRequest("POST", "/game", request, CreateGameResponse.class, authToken);
     }
+
 
     public ListGamesResponse listGames(String authToken) throws ResponseException {
         var request = new ListGamesRequest(authToken);
