@@ -31,7 +31,7 @@ public class ChessClient {
                 case "creategame" -> createGame(params);
                 case "listgames" -> listGames();
                 case "joingame" -> joinGame(params);
-                case "observe" -> observeGame(params);
+//                case "observe" -> observeGame(params);
                 case "quit" -> "quit";
                 case "help" -> help();
                 case "clear" -> clearDatabase();
@@ -42,7 +42,7 @@ public class ChessClient {
         }
     }
 
-    private String register(String... params) throws ResponseException {
+    public String register(String... params) throws ResponseException {
         if (params.length != 3) {
             throw new ResponseException(400, "Usage: register <username> <password> <email>");
         }
@@ -52,7 +52,7 @@ public class ChessClient {
         return "Registered and signed in as " + response.username();
     }
 
-    private String login(String... params) throws ResponseException {
+    public String login(String... params) throws ResponseException {
         if (params.length != 2) {
             throw new ResponseException(400, "Usage: login <username> <password>");
         }
@@ -62,7 +62,8 @@ public class ChessClient {
         return "Logged in as " + response.username();
     }
 
-    private String logout() throws ResponseException {
+    public String logout() throws ResponseException {
+
         if (authToken == null) {
             throw new ResponseException(400, "Not logged in");
         }
@@ -72,7 +73,7 @@ public class ChessClient {
         return "Logged out.";
     }
 
-    private String createGame(String... params) throws ResponseException {
+    public String createGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length != 1) {
             throw new ResponseException(400, "Usage: createGame <gameName>");
@@ -81,7 +82,7 @@ public class ChessClient {
         return "Game created with ID: " + response.gameID();
     }
 
-    private String listGames() throws ResponseException {
+    public String listGames() throws ResponseException {
         assertSignedIn();
         var response = server.listGames(authToken);
         var builder = new StringBuilder("Available games:\n");
@@ -92,7 +93,7 @@ public class ChessClient {
         return builder.toString();
     }
 
-    private String joinGame(String... params) throws ResponseException {
+    public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length != 2) {
             throw new ResponseException(400, "Usage: joinGame <gameID> <WHITE|BLACK>");
@@ -100,16 +101,6 @@ public class ChessClient {
         int gameID = Integer.parseInt(params[0]);
         var response = server.joinGame(authToken, gameID, params[1].toUpperCase());
         return "Joined game " + gameID + " as " + params[1].toUpperCase();
-    }
-
-    private String observeGame(String... params) throws ResponseException {
-        assertSignedIn();
-        if (params.length != 1) {
-            throw new ResponseException(400, "Usage: observe <gameID>");
-        }
-        int gameID = Integer.parseInt(params[0]);
-        var response = server.observeGame(authToken, gameID);
-        return "Observing game " + gameID;
     }
 
     public String help() {
@@ -129,15 +120,19 @@ public class ChessClient {
                 """;
     }
 
+    public String clearDatabase() throws ResponseException {
+        server.clear(); // Calls ServerFacade
+        return "Database cleared.";
+    }
+
     private void assertSignedIn() throws ResponseException {
         if (state == State.SIGNEDOUT) {
             throw new ResponseException(401, "You must be logged in.");
         }
     }
 
-    public String clearDatabase() throws ResponseException {
-        server.clear(); // Calls ServerFacade
-        return "Database cleared.";
+    public boolean isLoggedIn() {
+        return this.authToken != null && !this.authToken.isEmpty();
     }
 
 

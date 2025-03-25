@@ -1,21 +1,24 @@
 package client;
 
-import java.util.Scanner;
 import client.websocket.ChessNotificationHandler;
 import client.websocket.NotificationHandler;
 
+import java.util.Scanner;
+
 public class Repl {
     private final ChessClient client;
+    private final PreLoginRepl preLogin;
+    private final PostLoginRepl postLogin;
 
-    public Repl(int serverUrl) {
+    public Repl(int serverPort) {
         NotificationHandler notificationHandler = new ChessNotificationHandler();
-        this.client = new ChessClient(serverUrl, notificationHandler);
+        this.client = new ChessClient(serverPort, notificationHandler);
+        this.preLogin = new PreLoginRepl(client);
+        this.postLogin = new PostLoginRepl(client);
     }
 
     public void run() {
         System.out.println("♔ Welcome to 240 Chess!");
-        System.out.println(client.help());
-
         Scanner scanner = new Scanner(System.in);
         String result = "";
 
@@ -24,9 +27,14 @@ public class Repl {
             String input = scanner.nextLine();
 
             try {
-                result = client.eval(input);
+                if (client.isLoggedIn()) {
+                    result = postLogin.eval(input);
+                } else {
+                    result = preLogin.eval(input);
+                }
                 System.out.print(result);
             } catch (Exception e) {
+                e.printStackTrace(); // for debugging
                 System.out.print("Error: " + e.getMessage());
             }
         }

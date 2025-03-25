@@ -2,6 +2,7 @@ package client;
 
 import exception.ResponseException;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class PostLoginRepl {
@@ -10,6 +11,25 @@ public class PostLoginRepl {
     public PostLoginRepl(ChessClient client) {
         this.client = client;
     }
+
+    public String eval(String input) throws ResponseException {
+        var tokens = input.split(" ");
+        var command = tokens[0];
+        var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+
+        return switch (command.toLowerCase()) {
+            case "logout" -> client.logout();
+            case "creategame" -> client.createGame(params);
+            case "listgames" -> client.listGames();
+            case "joingame" -> client.joinGame(params);
+//            case "observe" -> client.observeGame(params);
+            case "help" -> client.help();
+            case "quit" -> "quit";
+            case "clear" -> client.clearDatabase();
+            default -> "Unknown command. Type 'help' to see options.";
+        };
+    }
+
 
     public void run() {
         System.out.println("\n== Post-login Commands ==");

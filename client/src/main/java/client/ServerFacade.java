@@ -33,9 +33,9 @@ public class ServerFacade {
 
     //quit and help don't interact with the server, so are therefore only in repl
 
-    public LogoutResponse logout(String authToken) throws ResponseException {
+    public void logout(String authToken) throws ResponseException {
         var request = new LogoutRequest(authToken);
-        return makeRequest("DELETE", "/session", request, LogoutResponse.class, authToken);
+        makeRequest("DELETE", "/session", request, LogoutResponse.class, authToken);
     }
 
     public CreateGameResponse createGame(String authToken, String gameName) throws ResponseException {
@@ -71,6 +71,11 @@ public class ServerFacade {
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
+            System.out.println("[DEBUG] Sending request to: " + url);
+            System.out.println("[DEBUG] Method: " + method);
+            System.out.println("[DEBUG] AuthToken: " + authToken);
+            System.out.println("[DEBUG] Request body: " + new Gson().toJson(request));
+
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
 
