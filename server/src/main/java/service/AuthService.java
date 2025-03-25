@@ -65,7 +65,7 @@ public class AuthService {
         AuthData authData = authDAO.getAuth(authToken);
 
         if (authData == null) { // Double-check that authData is valid
-            throw new DataAccessException("Error: Invalid auth token");
+            throw new DataAccessException("Error: Invalid authToken");
         }
 
         return authData.username(); // Return the username tied to the token

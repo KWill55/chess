@@ -45,18 +45,18 @@ public class SQLAuthDAOTests {
         AuthData authData = new AuthData(null, "kenny");
         authDAO.createAuth(authData);
         DataAccessException ex = assertThrows(DataAccessException.class, () -> authDAO.getAuth("non-existent-token"));
-        assertEquals("Error: Auth token not found", ex.getMessage());
+        assertEquals("Error: authToken not found", ex.getMessage());
     }
 
     @Test
-    @DisplayName("Create Auth Token - Fail (Non-existent User)")
+    @DisplayName("Create authToken - Fail (Non-existent User)")
     public void testCreateAuthNonExistentUser() {
         AuthData authData = new AuthData(null, "nonExistentUser");
         DataAccessException ex = assertThrows(DataAccessException.class, () -> authDAO.createAuth(authData));
     }
 
     @Test
-    @DisplayName("Get Auth Token - Success")
+    @DisplayName("Get authToken - Success")
     public void testGetAuthSuccess() throws DataAccessException {
         // Define a known token and username for testing.
         String knownToken = "known-token-123";
@@ -68,9 +68,9 @@ public class SQLAuthDAOTests {
             stmt.setString(1, knownToken);
             stmt.setString(2, username);
             int rowsAffected = stmt.executeUpdate();
-            assertTrue(rowsAffected > 0, "Expected at least one row to be inserted for the auth token");
+            assertTrue(rowsAffected > 0, "Expected at least one row to be inserted for the authToken");
         } catch (SQLException e) {
-            throw new DataAccessException("Error inserting known auth token: " + e.getMessage());
+            throw new DataAccessException("Error inserting known authToken: " + e.getMessage());
         }
 
         // Use the DAO to retrieve the auth token.
@@ -82,14 +82,14 @@ public class SQLAuthDAOTests {
     }
 
     @Test
-    @DisplayName("Get Auth Token - Fail (Non-existent)")
+    @DisplayName("Get authToken - Fail (Non-existent)")
     public void testGetAuthFailure() {
         DataAccessException ex = assertThrows(DataAccessException.class, () -> authDAO.getAuth("non-existent-token"));
-        assertEquals("Error: Auth token not found", ex.getMessage());
+        assertEquals("Error: authToken not found", ex.getMessage());
     }
 
     @Test
-    @DisplayName("Delete Auth Token - Success")
+    @DisplayName("Delete authToken - Success")
     public void testDeleteAuthSuccess() throws DataAccessException {
         // Define a known token and username for testing.
         String knownToken = "delete-test-token-123";
@@ -101,35 +101,35 @@ public class SQLAuthDAOTests {
             stmt.setString(1, knownToken);
             stmt.setString(2, username);
             int rowsAffected = stmt.executeUpdate();
-            assertTrue(rowsAffected > 0, "Expected the auth token to be inserted successfully");
+            assertTrue(rowsAffected > 0, "Expected the authToken to be inserted successfully");
         } catch (SQLException e) {
-            throw new DataAccessException("Error inserting known auth token: " + e.getMessage());
+            throw new DataAccessException("Error inserting known authToken: " + e.getMessage());
         }
 
         // Call the DAO's deleteAuth method with the known token.
-        assertDoesNotThrow(() -> authDAO.deleteAuth(knownToken), "Deleting an existing auth token should not throw an exception");
+        assertDoesNotThrow(() -> authDAO.deleteAuth(knownToken), "Deleting an existing authToken should not throw an exception");
 
         // Verify that retrieving the token throws the expected exception.
         DataAccessException ex = assertThrows(DataAccessException.class, () -> authDAO.getAuth(knownToken));
-        assertEquals("Error: Auth token not found", ex.getMessage(), "Expected auth token to be deleted");
+        assertEquals("Error: authToken not found", ex.getMessage(), "Expected authToken to be deleted");
     }
 
 
     @Test
-    @DisplayName("Delete Auth Token - Fail (Non-existent)")
+    @DisplayName("Delete authToken - Fail (Non-existent)")
     public void testDeleteAuthFailure() {
         DataAccessException ex = assertThrows(DataAccessException.class, () -> authDAO.deleteAuth("non-existent-token"));
-        assertEquals("Error: Auth token not found for deletion", ex.getMessage());
+        assertEquals("Error: authToken not found for deletion", ex.getMessage());
     }
 
     @Test
-    @DisplayName("Clear Auth Tokens - Success")
+    @DisplayName("Clear authTokens - Success")
     public void testClearAuth() throws DataAccessException {
         // Create two auth tokens for testUser
         authDAO.createAuth(new AuthData(null, "kenny"));
         authDAO.createAuth(new AuthData(null, "kenny"));
         authDAO.clear();
         DataAccessException ex = assertThrows(DataAccessException.class, () -> authDAO.getAuth("any-token"));
-        assertEquals("Error: Auth token not found", ex.getMessage());
+        assertEquals("Error: authToken not found", ex.getMessage());
     }
 }

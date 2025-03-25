@@ -37,6 +37,7 @@ public class SQLUserDAO implements UserDAO {
             // Hash the password using bcrypt before storing it
             String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
 
+
             try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                 insertStmt.setString(1, user.username());
                 insertStmt.setString(2, hashedPassword);
@@ -59,12 +60,14 @@ public class SQLUserDAO implements UserDAO {
      * @param username The username of the user to retrieve.
      * @return The UserData object containing the user's details.
      */
+    @Override
     public UserData getUser(String username) throws DataAccessException {
+        String sql = "SELECT * FROM Users WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();
-             var stmt = conn.prepareStatement("SELECT * FROM Users WHERE username = ?")) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
-            try (var rs = stmt.executeQuery()) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return new UserData(
                             rs.getString("username"),
@@ -72,13 +75,15 @@ public class SQLUserDAO implements UserDAO {
                             rs.getString("email")
                     );
                 } else {
-                    return null; // Instead of throwing an exception
+                    // Return null if user not found, as expected by the test.
+                    return null;
                 }
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error fetching user: " + e.getMessage());
         }
     }
+
 
 
     /**

@@ -1,7 +1,8 @@
 package service;
 
 import dataaccess.DataAccessException;
-import dataaccess.InMemoryGameDAO;
+import dataaccess.GameDAO;
+import dataaccess.SQLGameDAO;
 import model.GameData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +14,17 @@ import java.util.List;
 
 public class GameServiceTests {
     private GameService gameService;
-    private InMemoryGameDAO inMemoryGameDAO;
+    private SQLGameDAO gameDAO;
 
     @BeforeEach
     void setUp() {
-        inMemoryGameDAO = new InMemoryGameDAO();
-        gameService = new GameService(inMemoryGameDAO);
+        gameDAO = new SQLGameDAO();
+        gameService = new GameService(gameDAO);
+        try {
+            gameService.clear();
+        } catch (DataAccessException e) {
+            fail("Failed to clear gameService setup: " + e.getMessage());
+        }
     }
 
     // createGame: Successfully create a game (positive test case)
@@ -76,7 +82,7 @@ public class GameServiceTests {
         DataAccessException thrown = assertThrows(DataAccessException.class, () -> {
             gameService.getGame(22); // Non-existent game ID
         });
-        assertEquals("Error: Game not found", thrown.getMessage());
+        assertEquals("Error: Game not found.", thrown.getMessage());
     }
 
     // updateGame: Successfully update a game (positive test case)
@@ -84,12 +90,19 @@ public class GameServiceTests {
     @DisplayName("Successfully update a game")
     void testUpdateGameSuccess() throws DataAccessException {
         int gameID = gameService.createGame("Old Game Name");
-        GameData updatedGame = new GameData(gameID, "Reese", "Twix", "New Game Name", null);
+        GameData originalGame = gameService.getGame(gameID);
 
+        GameData updatedGame = new GameData(
+                gameID,
+                originalGame.whiteUsername(),  // Ensure this is a valid username (e.g., "kenny")
+                originalGame.blackUsername(),
+                "New Game Name",
+                originalGame.game()
+        );
         assertDoesNotThrow(() -> gameService.updateGame(gameID, updatedGame));
 
         GameData retrievedGame = gameService.getGame(gameID);
-        assertEquals("New Game Name", retrievedGame.gameName(), "Game name should be updated");
+        assertEquals("New Game Name", retrievedGame.gameName());
     }
 
     // updateGame: Fail to update a non-existent game (negative test case)
@@ -101,7 +114,7 @@ public class GameServiceTests {
         DataAccessException thrown = assertThrows(DataAccessException.class, () -> {
             gameService.updateGame(22, updatedGame);
         });
-        assertEquals("Error: Game not found", thrown.getMessage());
+        assertEquals("Error: No game updated, invalid game ID.", thrown.getMessage());
     }
 
     // clear: Successfully clear all games (positive test case)

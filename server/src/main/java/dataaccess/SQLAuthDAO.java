@@ -12,7 +12,7 @@ public class SQLAuthDAO implements AuthDAO {
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
         if (auth == null || auth.username() == null) {
-            throw new DataAccessException("Invalid auth data");
+            throw new DataAccessException("Error: authToken cannot be null");
         }
 
         // If the incoming AuthData doesn't have a token, generate one
@@ -30,12 +30,16 @@ public class SQLAuthDAO implements AuthDAO {
             stmt.setString(2, auth.username());
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
-                throw new DataAccessException("Error: Auth token was not inserted");
+                throw new DataAccessException("Error: authToken was not inserted");
             }
 
             System.out.println("DEBUG: Inserted authToken: " + token + " for user: " + auth.username());
         } catch (SQLException e) {
-            throw new DataAccessException("Error inserting auth token: " + e.getMessage());
+            if (e.getMessage().toLowerCase().contains("foreign key") ||
+                    e.getMessage().toLowerCase().contains("constraint fails")) {
+                throw new DataAccessException("Error inserting authToken: User does not exist");
+            }
+            throw new DataAccessException("Error inserting authToken: " + e.getMessage());
         }
     }
 
@@ -54,11 +58,11 @@ public class SQLAuthDAO implements AuthDAO {
                 System.out.println("DEBUG: Retrieved auth for " + username);
                 return new AuthData(authToken, username);
             } else {
-                System.out.println("DEBUG: Auth token not found: " + authToken);
-                throw new DataAccessException("Error: Auth token not found");
+                System.out.println("DEBUG: authToken not found: " + authToken);
+                throw new DataAccessException("Error: authToken not found");
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error retrieving auth token: " + e.getMessage());
+            throw new DataAccessException("Error retrieving authToken: " + e.getMessage());
         }
     }
 
@@ -72,13 +76,13 @@ public class SQLAuthDAO implements AuthDAO {
             int rowsAffected = stmt.executeUpdate();
 
             if (rowsAffected == 0) {
-                throw new DataAccessException("Error: Auth token not found for deletion");
+                throw new DataAccessException("Error: authToken not found for deletion");
             }
 
             System.out.println("DEBUG: Deleted authToken: " + authToken);
 
         } catch (SQLException e) {
-            throw new DataAccessException("Error deleting auth token: " + e.getMessage());
+            throw new DataAccessException("Error deleting authToken: " + e.getMessage());
         }
     }
 
@@ -91,7 +95,7 @@ public class SQLAuthDAO implements AuthDAO {
             int rowsDeleted = stmt.executeUpdate();
             System.out.println("DEBUG: Auth table cleared. Rows deleted: " + rowsDeleted);
         } catch (SQLException e) {
-            throw new DataAccessException("Error clearing auth tokens: " + e.getMessage());
+            throw new DataAccessException("Error clearing authTokens: " + e.getMessage());
         }
     }
 }

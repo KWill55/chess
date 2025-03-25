@@ -1,29 +1,52 @@
 package service;
 
-import dataaccess.InMemoryAuthDAO;
+import dataaccess.SQLAuthDAO;
 import dataaccess.DataAccessException;
+import dataaccess.SQLUserDAO;
 import model.AuthData;
+import model.UserData;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuthServiceTests {
     private AuthService authService;
-    private InMemoryAuthDAO inMemoryAuthDAO;
+    private UserService userService;
+    private SQLAuthDAO authDAO;
+    private SQLUserDAO userDAO;
 
     @BeforeEach
-    void setUp() {
-        inMemoryAuthDAO = new InMemoryAuthDAO();  // Creates a new AuthDAO for each test
-        authService = new AuthService(inMemoryAuthDAO);
+    void setUp() throws DataAccessException {
+        authDAO = new SQLAuthDAO();  // Creates a new AuthDAO for each test
+        userDAO = new SQLUserDAO();
+
+        try {
+            authDAO.clear();
+            userDAO.clear(); // Make sure this clears the Users table
+        } catch (DataAccessException e) {
+            fail("Setup failed: " + e.getMessage());
+        }
+
+        // Insert test user "kenny" (and others as needed)
+        try {
+            userDAO.createUser(new UserData("kenny", "1234", "kenny@gmail.com"));
+            userDAO.createUser(new UserData("alice", "password", "alice@gmail.com"));
+        } catch (DataAccessException e) {
+            // If the user already exists, you might want to ignore or log the error
+            System.out.println("Test user might already exist: " + e.getMessage());
+        }
+
+        authService = new AuthService(authDAO);
+        userService = new UserService(userDAO);
     }
 
     //createAuth: Successfully create an auth token
     @Test
-    @DisplayName("Successfully create an auth token")
+    @DisplayName("Successfully create an authToken")
     void testCreateAuthSuccess() throws DataAccessException {
         // Create an auth Token for the given username
         String username = "kenny";
         String authToken = authService.createAuth(username);
-        assertNotNull(authToken, "Auth token should not be null");
+        assertNotNull(authToken, "authToken should not be null");
 
         // Verify that retrieving the authToken is successful
         AuthData storedAuth = authService.getAuth(authToken);
@@ -33,22 +56,22 @@ class AuthServiceTests {
 
     // createAuth: Fail to create an auth token for a null username
     @Test
-    @DisplayName("Fail to create an auth token for a null username")
+    @DisplayName("Fail to create an authToken for a null username")
     void testCreateAuthFailure() {
         //create invalid AuthData (null)
         AuthData invalidAuthData = new AuthData(null, null);
 
         // make sure that exception is thrown when creating invalid Auth Data
         DataAccessException thrown = assertThrows(DataAccessException.class, () -> {
-            inMemoryAuthDAO.createAuth(invalidAuthData);
+            authDAO.createAuth(invalidAuthData);
         });
 
-        assertEquals("Error: Auth token cannot be null", thrown.getMessage());
+        assertEquals("Error: authToken cannot be null", thrown.getMessage());
     }
 
     // getAuth: Successfully retrieve an existing auth token
     @Test
-    @DisplayName("Successfully retrieve an existing auth token")
+    @DisplayName("Successfully retrieve an existing authToken")
     void testGetAuthSuccess() throws DataAccessException {
         //Create an
         String username = "kenny";
@@ -62,7 +85,7 @@ class AuthServiceTests {
 
     // getAuth: Fail to retrieve a non-existent auth token
     @Test
-    @DisplayName("Fail to retrieve a non-existent auth token")
+    @DisplayName("Fail to retrieve a non-existent authToken")
     void testGetAuthFailure() {
         // Attempt to retrieve an authToken that does not exist
         String invalidAuthToken = "invalidToken";
@@ -77,7 +100,7 @@ class AuthServiceTests {
 
     // deleteAuth: Successfully delete an auth token
     @Test
-    @DisplayName("Successfully delete an auth token")
+    @DisplayName("Successfully delete an authToken")
     void testDeleteAuthSuccess() throws DataAccessException {
         String username = "kenny";
         String authToken = authService.createAuth(username);
@@ -92,10 +115,10 @@ class AuthServiceTests {
 
     // deleteAuth: Fail to delete a non-existent auth token
     @Test
-    @DisplayName("Fail to delete a non-existent auth token")
+    @DisplayName("Fail to delete a non-existent authToken")
     void testDeleteAuthFailure() {
         DataAccessException thrown = assertThrows(DataAccessException.class, () -> authService.deleteAuth("invalidToken"));
-        assertEquals("Error: authToken not found", thrown.getMessage());
+        assertEquals("Error: authToken not found for deletion", thrown.getMessage());
     }
 
     // clear: Successfully clear all auth data

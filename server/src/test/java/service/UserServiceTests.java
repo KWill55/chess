@@ -1,20 +1,29 @@
 package service;
 
-import dataaccess.InMemoryUserDAO;
+import dataaccess.SQLUserDAO;
 import dataaccess.DataAccessException;
 import model.UserData;
 import org.junit.jupiter.api.*;
+import org.mindrot.jbcrypt.BCrypt;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
 class UserServiceTests {
     private UserService userService;
-    private InMemoryUserDAO inMemoryUserDAO;
+    private SQLUserDAO userDAO;
 
     @BeforeEach
     void setUp() {
-        inMemoryUserDAO = new InMemoryUserDAO();  // Creates a fresh UserDAO for each test
-        userService = new UserService(inMemoryUserDAO);
+        userDAO = new SQLUserDAO();  // Creates a fresh UserDAO for each test
+
+        try {
+            userDAO.clear();
+        } catch (DataAccessException e) {
+            fail("Failed to clear users table in setup: " + e.getMessage());
+        }
+
+        userService = new UserService(userDAO);
     }
 
     // createUser: Successfully create a user
@@ -28,7 +37,8 @@ class UserServiceTests {
         UserData storedUser = userService.getUser("kenny");
         assertNotNull(storedUser);
         assertEquals("kenny", storedUser.username());
-        assertEquals("1234", storedUser.password());
+        assertTrue(BCrypt.checkpw("1234", storedUser.password()));
+//        assertEquals("1234", storedUser.password());
         assertEquals("kenny@gmail.com", storedUser.email());
     }
 
@@ -60,9 +70,10 @@ class UserServiceTests {
     // getUser: Fail to get non-existent user
     @Test
     @DisplayName("Fail to get non-existent user")
-    void testGetUserFailure() {
-        DataAccessException thrown = assertThrows(DataAccessException.class, () -> userService.getUser("nonexistent"));
-        assertEquals("Error: User not found", thrown.getMessage());
+    void testGetUserFailure() throws DataAccessException {
+        UserData retrieved = userService.getUser("nonexistent");
+        assertNull(retrieved, "Expected null for a non-existent user");
+
     }
 
     // clear: Successfully clear userData database
@@ -77,11 +88,11 @@ class UserServiceTests {
 
         userService.clear(); // Clear all users
 
-        // Verify database is empty
-        DataAccessException thrown1 = assertThrows(DataAccessException.class, () -> userService.getUser("jack"));
-        DataAccessException thrown2 = assertThrows(DataAccessException.class, () -> userService.getUser("stitch"));
+        // Verify that after clearing, getUser returns null
+        UserData retrieved1 = userService.getUser("jack");
+        UserData retrieved2 = userService.getUser("stitch");
 
-        assertEquals("Error: User not found", thrown1.getMessage());
-        assertEquals("Error: User not found", thrown2.getMessage());
+        assertNull(retrieved1, "User 'jack' should be removed after clear");
+        assertNull(retrieved2, "User 'stitch' should be removed after clear");
     }
 }
