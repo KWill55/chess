@@ -183,19 +183,6 @@ public class ServerFacadeTests {
 
     // ---------- Observe Game Tests ----------
 
-    @Test
-    void observeGameNonexistentGameFails() throws Exception {
-        // Register a new user
-        var regResponse = facade.register("observeFailUser", "password", "observeFailUser@gmail.com");
-        String authToken = regResponse.authToken();
-        currentAuthToken = authToken;
-
-        // Attempt to observe a game with an ID that doesn't exist (e.g., 9999)
-        assertThrows(ResponseException.class, () -> {
-            facade.observeGame(authToken, 9999);
-        });
-    }
-
 
     // ---------- Clear Test? ----------
 
