@@ -1,10 +1,8 @@
 package ui;
 
 import chess.*;
-
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-
 import static ui.EscapeSequences.*;
 
 public class DrawBoard {
@@ -12,40 +10,63 @@ public class DrawBoard {
     // Define board dimensions for chess
     private static final int BOARD_SIZE = 8;
 
-    // Symbols for empty square
-    private static final String EMPTY = "   ";
-
-    private static final String WK = " WK";
-    private static final String BK = " BK";
-
     private ChessBoard board;
+    private String playerColor;
 
-    public DrawBoard(ChessBoard board) {
+    public DrawBoard(ChessBoard board, String playerColor) {
         this.board = board;
+        this.playerColor = playerColor;
     }
 
     public void drawBoard() {
+        System.out.println("Perspective: " + playerColor);
+        System.out.println("Perspective detected: " + playerColor);
+        System.out.println("Equals WHITE? " + playerColor.equals("WHITE"));
+
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
-        // Draw column labels
-        out.print("   "); // Padding for row labels
-        for (char c = 'a'; c < 'a' + BOARD_SIZE; c++) {
+        // Determine column order based on perspective.
+        // White view: columns a-h (left to right)
+        // Black view: columns h-a (left to right)
+        char startCol = (playerColor.equals("WHITE")) ? 'a' : (char)('a' + BOARD_SIZE - 1);
+        char endCol   = (playerColor.equals("WHITE")) ? (char)('a' + BOARD_SIZE - 1) : 'a';
+        int colStep   = (playerColor.equals("WHITE")) ? 1 : -1;
+
+        // Determine row order.
+        // White POV: rows from 1 (bottom) to 8 (top)
+        // Black POV: rows from 8 (bottom) to 1 (top)
+        int startRow, endRow, rowStep;
+        if (playerColor.equals("WHITE")) {
+            startRow = BOARD_SIZE - 1;  // bottom of board in array corresponds to row 1
+            endRow   = 0;               // top of board corresponds to row 8
+            rowStep  = -1;
+        } else {
+            startRow = 0;
+            endRow   = BOARD_SIZE - 1;
+            rowStep  = 1;
+        }
+
+        // Draw column labels at the top.
+        out.print("   ");
+        for (char c = startCol; (colStep > 0 ? c <= endCol : c >= endCol); c += colStep) {
             out.printf("  %c  ", c);
         }
         out.println();
 
-        // Draw each row
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            // Draw the row number on the left
-            out.printf(" %d ", BOARD_SIZE - row); // Print row labels from 8 to 1
+        // Draw each row.
+        for (int row = startRow; (rowStep > 0 ? row <= endRow : row >= endRow); row += rowStep) {
 
-            // Draw each square
-            for (int col = 0; col < BOARD_SIZE; col++) {
+            // Calculate the row label.
+            int rowLabel = row + 1;
+            out.printf(" %d ", rowLabel);
+
+            // Draw each square in the row.
+            for (int col = (colStep > 0 ? 0 : BOARD_SIZE - 1); (colStep > 0 ? col < BOARD_SIZE : col >= 0); col += colStep) {
                 ChessPiece piece = board.squares[row][col];
                 String display;
 
-                // Set background color based on square color (light or dark)
+                // Set background color for the square.
                 if ((row + col) % 2 == 0) {
                     out.print(SET_BG_COLOR_LIGHT_GREY);
                 } else {
@@ -53,45 +74,35 @@ public class DrawBoard {
                 }
 
                 if (piece == null) {
-                    // If there is no piece, use an empty string.
-                    display = "     ";
-                    // Optionally, set a default text color here.
+                    display = "     "; // Empty square
                     out.print(SET_TEXT_COLOR_BLACK);
                 } else {
-                    // Set the text color based on the piece's team
+                    // Set text color based on the team.
                     if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        out.print(SET_TEXT_COLOR_WHITE);
-                    } else {
                         out.print(SET_TEXT_COLOR_BLACK);
+                    } else {
+                        out.print(SET_TEXT_COLOR_WHITE);
                     }
-
-                    // Use a special abbreviation for knights
+                    // For knights, use "N" as abbreviation.
                     if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {
                         display = "  N  ";
                     } else {
-                        // Use the first letter of the piece type for other pieces
+                        // Otherwise, use the first letter of the piece type.
                         display = "  " + piece.getPieceType().name().charAt(0) + "  ";
                     }
                 }
                 out.print(display);
-
-                // Reset color for the separator or next square
-                out.print(RESET);
+                out.print(RESET); // Reset for next square.
             }
             out.println();
         }
 
-
-//        out.println();
-
-        // Draw column labels below (optional)
+        // Draw column labels at the bottom.
         out.print("   ");
-        for (char c = 'a'; c < 'a' + BOARD_SIZE; c++) {
+        for (char c = startCol; (colStep > 0 ? c <= endCol : c >= endCol); c += colStep) {
             out.printf("  %c  ", c);
         }
         out.println();
-
-        // Reset terminal colors to default
         out.print(RESET);
     }
 }

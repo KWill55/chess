@@ -103,13 +103,29 @@ public class ChessClient {
             throw new ResponseException(400, "Usage: joinGame <gameID> <WHITE|BLACK>");
         }
         int gameID = Integer.parseInt(params[0]);
-        var response = server.joinGame(authToken, gameID, params[1].toUpperCase());
+        String playerColor = params[1].toUpperCase();
+        var response = server.joinGame(authToken, gameID, playerColor);
 
+//        ChessGame newGame = new ChessGame();
+//        ChessBoard currentBoard = newGame.getBoard();
+//        DrawBoard board = new DrawBoard(currentBoard, );
+//        board.drawBoard();
 
+        // For white's perspective:
         ChessGame newGame = new ChessGame();
-        ChessBoard currentBoard = newGame.getBoard();
-        DrawBoard board = new DrawBoard(currentBoard);
-        board.drawBoard();
+        ChessBoard board = newGame.getBoard();
+
+        if (playerColor.equals("WHITE")){
+            DrawBoard whiteBoard = new DrawBoard(board, playerColor);
+            whiteBoard.drawBoard();
+        }
+        else if (playerColor.equals("BLACK")){
+            DrawBoard blackBoard = new DrawBoard(board, playerColor);
+            blackBoard.drawBoard();
+        }else{
+            throw new IllegalArgumentException("Invalid player color: " + playerColor);
+        }
+
 
 
         return "Joined game " + gameID + " as " + params[1].toUpperCase();
