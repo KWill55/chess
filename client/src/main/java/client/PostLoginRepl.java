@@ -22,7 +22,7 @@ public class PostLoginRepl {
             case "creategame" -> client.createGame(params);
             case "listgames" -> client.listGames();
             case "joingame" -> client.joinGame(params);
-//            case "observe" -> client.observeGame(params);
+            case "observe" -> client.observeGame(params);
             case "help" -> client.help();
             case "quit" -> "quit";
             case "clear" -> client.clearDatabase();

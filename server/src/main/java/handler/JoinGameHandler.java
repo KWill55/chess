@@ -67,8 +67,10 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
         }
 
         // Validate request data
-        if (request.gameID() <= 0 || request.playerColor() == null ||
-                !(request.playerColor().equalsIgnoreCase("WHITE") || request.playerColor().equalsIgnoreCase("BLACK"))) {
+        if (request.gameID() <= 0 ||
+                (request.playerColor() != null &&
+                        !(request.playerColor().equalsIgnoreCase("WHITE") ||
+                                request.playerColor().equalsIgnoreCase("BLACK")))) {
             res.status(400); // Bad request: Invalid game ID or player color
             return gson.toJson(Map.of("message", "Error: bad request"));
         }
@@ -79,6 +81,12 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
             if (game == null) {
                 res.status(400); // Bad request: Game does not exist
                 return gson.toJson(Map.of("message", "Error: bad request"));
+            }
+
+            if (request.playerColor() == null) {
+                // This is an observer
+                res.status(200);
+                return gson.toJson(Map.of("message", "Observer joined"));
             }
 
             // Check if the requested player slot is already occupied
@@ -103,6 +111,7 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
             // Return success response with an empty JSON object
             res.status(200);
             return gson.toJson(Map.of());
+
 
         } catch (DataAccessException e) {
             res.status(500); // Internal Server Error: Database failure or unexpected issue

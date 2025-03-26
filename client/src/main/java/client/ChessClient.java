@@ -2,8 +2,6 @@ package client;
 
 import client.websocket.NotificationHandler;
 import exception.ResponseException;
-import model.*;
-import client.ServerFacade;
 import chess.*;
 import ui.DrawBoard;
 
@@ -46,22 +44,34 @@ public class ChessClient {
 
     public String register(String... params) throws ResponseException {
         if (params.length != 3) {
-            throw new ResponseException(400, "Usage: register <username> <password> <email>");
+            throw new ResponseException(400, "Register Format: register <username> <password> <email>");
         }
-        var response = server.register(params[0], params[1], params[2]);
-        this.authToken = response.authToken();
-        this.state = State.SIGNEDIN;
-        return "Registered and signed in as " + response.username();
+
+        try{
+            var response = server.register(params[0], params[1], params[2]);
+            this.authToken = response.authToken();
+            this.state = State.SIGNEDIN;
+            return "Registered and signed in as " + response.username();
+        }
+        catch (ResponseException e){
+            return "Error: User already exists in database";
+        }
+
     }
 
     public String login(String... params) throws ResponseException {
         if (params.length != 2) {
-            throw new ResponseException(400, "Usage: login <username> <password>");
+            throw new ResponseException(400, "Login Format: login <username> <password>");
         }
-        var response = server.login(params[0], params[1]);
-        this.authToken = response.authToken();
-        this.state = State.SIGNEDIN;
-        return "Logged in as " + response.username();
+
+        try {
+            var response = server.login(params[0], params[1]);
+            this.authToken = response.authToken();
+            this.state = State.SIGNEDIN;
+            return "Logged in as " + response.username();
+        } catch (ResponseException e) {
+            return "Login failed: Invalid Username or Password";
+        }
     }
 
     public String logout() throws ResponseException {
@@ -77,7 +87,7 @@ public class ChessClient {
 
     public String createGame(String... params) throws ResponseException {
         if (params.length != 1) {
-            throw new ResponseException(400, "Expected: createGame <gameName>");
+            throw new ResponseException(400, "createGame format: createGame <gameName>");
         }
 
         String gameName = params[0];
@@ -99,46 +109,65 @@ public class ChessClient {
 
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
+
         if (params.length != 2) {
-            throw new ResponseException(400, "Usage: joinGame <gameID> <WHITE|BLACK>");
-        }
-        int gameID = Integer.parseInt(params[0]);
-        String playerColor = params[1].toUpperCase();
-        var response = server.joinGame(authToken, gameID, playerColor);
-
-//        ChessGame newGame = new ChessGame();
-//        ChessBoard currentBoard = newGame.getBoard();
-//        DrawBoard board = new DrawBoard(currentBoard, );
-//        board.drawBoard();
-
-        // For white's perspective:
-        ChessGame newGame = new ChessGame();
-        ChessBoard board = newGame.getBoard();
-
-        if (playerColor.equals("WHITE")){
-            DrawBoard whiteBoard = new DrawBoard(board, playerColor);
-            whiteBoard.drawBoard();
-        }
-        else if (playerColor.equals("BLACK")){
-            DrawBoard blackBoard = new DrawBoard(board, playerColor);
-            blackBoard.drawBoard();
-        }else{
-            throw new IllegalArgumentException("Invalid player color: " + playerColor);
+            throw new ResponseException(400, "joinGame format: joinGame <gameID> <WHITE|BLACK>");
         }
 
+        try{
+            int gameID = Integer.parseInt(params[0]);
+            String playerColor = params[1].toUpperCase();
+            var response = server.joinGame(authToken, gameID, playerColor);
 
+            // For white's perspective:
+            ChessGame newGame = new ChessGame();
+            ChessBoard board = newGame.getBoard();
 
-        return "Joined game " + gameID + " as " + params[1].toUpperCase();
+            if (playerColor.equals("WHITE")){
+                DrawBoard whiteBoard = new DrawBoard(board, playerColor);
+                whiteBoard.drawBoard();
+            }
+            else if (playerColor.equals("BLACK")){
+                DrawBoard blackBoard = new DrawBoard(board, playerColor);
+                blackBoard.drawBoard();
+            }else{
+                throw new IllegalArgumentException("Invalid player color: " + playerColor);
+            }
+
+            return "Joined game " + gameID + " as " + params[1].toUpperCase();
+        }
+        catch (ResponseException e){
+            return "Error: Invalid Game Request";
+        }
     }
 
     public String observeGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length != 1) {
-            throw new ResponseException(400, "Usage: observe <gameID>");
+            throw new ResponseException(400, "observeGame format: observe <gameID>");
         }
-        int gameID = Integer.parseInt(params[0]);
-        var response = server.observeGame(authToken, gameID);
-        return "Now observing game " + gameID;
+
+        try{
+            int gameID = Integer.parseInt(params[0]);
+            var response = server.joinGame(authToken, gameID,null);
+
+            // For white's perspective:
+            ChessGame newObserveGame = new ChessGame();
+            ChessBoard observeBoard = newObserveGame.getBoard();
+            DrawBoard drawObserveBoard = new DrawBoard(observeBoard, "WHITE");
+            drawObserveBoard.drawBoard();
+            return "Joined game " + gameID + " as observer";
+        } catch (ResponseException e) {
+            System.out.println("[DEBUG] Server rejected observe request: " + e.getMessage());
+            return "Error: Invalid Observe Request - " + e.getMessage();
+        } catch (NumberFormatException e) {
+            System.out.println("[DEBUG] Failed to parse game ID: " + params[0]);
+            return "Error: Invalid game ID format.";
+        } catch (Exception e) {
+            System.out.println("[DEBUG] Unexpected error in observeGame: " + e.getMessage());
+            e.printStackTrace();  // Optional: comment this out later
+            return "Error: Unexpected issue while trying to observe.";
+        }
     }
 
     public String help() {
@@ -147,6 +176,7 @@ public class ChessClient {
                 - register <username> <password> <email>
                 - login <username> <password>
                 - quit
+                - help
                 """ : """
                 Available commands:
                 - logout
@@ -154,6 +184,7 @@ public class ChessClient {
                 - listGames
                 - joinGame <gameID> <WHITE|BLACK>
                 - observe <gameID>
+                - help
                 - quit
                 """;
     }

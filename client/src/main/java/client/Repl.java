@@ -18,7 +18,15 @@ public class Repl {
     }
 
     public void run() {
-        System.out.println("♔ Welcome to 240 Chess!");
+        System.out.println("♔ Welcome to 240 Chess!\n");
+
+        System.out.println("""
+                Available commands:
+                - register <username> <password> <email>
+                - login <username> <password>
+                - quit
+                - help
+                """);
         Scanner scanner = new Scanner(System.in);
         String result = "";
 

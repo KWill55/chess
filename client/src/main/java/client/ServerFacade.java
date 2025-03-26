@@ -6,6 +6,7 @@ import model.*;
 
 import java.io.*;
 import java.net.*;
+import java.util.Map;
 
 public class ServerFacade {
 
@@ -61,11 +62,24 @@ public class ServerFacade {
     }
 
     //observe game
-    public JoinGameResponse observeGame(String authToken, int gameID) throws ResponseException {
-        // Create a JoinGameRequest with a null player color to indicate observation.
+    public void observeGame(String authToken, int gameID) throws ResponseException {
         var request = new JoinGameRequest(null, gameID);
-        return makeRequest("PUT", "/observe", request, JoinGameResponse.class, authToken);
+//        return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
     }
+
+//    public void observeGame(int gameID, String authToken) throws Exception {
+//        var body = Map.of(
+//                "gameID", gameID,
+//                "playerColor", null
+//        );
+//
+//        var response = this.makePostRequest("/game/join", body, authToken);
+//
+//        if (response.statusCode() != 200) {
+//            throw new Exception("Error: " + response.body());
+//        }
+//    }
+
 
 
     // ---------- Clear Method ----------
@@ -79,11 +93,6 @@ public class ServerFacade {
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
-            System.out.println("[DEBUG] Sending request to: " + url);
-            System.out.println("[DEBUG] Method: " + method);
-            System.out.println("[DEBUG] AuthToken: " + authToken);
-            System.out.println("[DEBUG] Request body: " + new Gson().toJson(request));
-
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
 
@@ -132,28 +141,32 @@ public class ServerFacade {
         }
     }
 
+    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException, ResponseException {
+        if (http.getResponseCode() >= 400) {
+            try (InputStream errorStream = http.getErrorStream()) {
+                InputStreamReader reader = new InputStreamReader(errorStream);
+                var map = new Gson().fromJson(reader, Map.class);
+                String message = (String) map.get("message");
+                throw new ResponseException(http.getResponseCode(), message != null ? message : "Unknown error");
+            }
+        }
 
-
-    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
-        if (http.getResponseCode() == 204) {  // No Content
+        if (http.getResponseCode() == 204 || http.getContentLength() == 0) {
             return null;
         }
 
         try (InputStream respBody = http.getInputStream()) {
-            String rawResponse = new String(respBody.readAllBytes());
-            System.out.println("[DEBUG] Raw response: " + rawResponse);
+            InputStreamReader reader = new InputStreamReader(respBody);
             if (responseClass != null) {
-                return new Gson().fromJson(rawResponse, responseClass);
+                return new Gson().fromJson(reader, responseClass);
+            } else {
+                return null;
             }
-            return null;
         }
     }
-
-
 
     private boolean isSuccessful(int status) {
         return status / 100 == 2;
     }
-
 }
 

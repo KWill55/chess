@@ -48,7 +48,7 @@ public class ServerFacadeTests {
     // ---------- Register Tests ----------
 
     @Test
-    void register_validUser_success() throws Exception {
+    void registerValidUserSuccess() throws Exception {
         var response = facade.register("kenny", "myPassword", "kenny@gmail.com");
         assertNotNull(response.authToken());
         assertEquals("kenny", response.username());
@@ -57,7 +57,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void register_duplicateUser_fails() throws Exception {
+    void registerDuplicateUserFails() throws Exception {
         facade.register("maddie", "maddie_password", "maddie@gmail.com");
         assertThrows(ResponseException.class, () -> {
             facade.register("maddie", "maddie_password", "maddie@gmail.com");
@@ -67,7 +67,7 @@ public class ServerFacadeTests {
     // ---------- Login Tests ----------
 
     @Test
-    void login_validUser_success() throws Exception {
+    void loginValidUserSuccess() throws Exception {
         facade.register("kayla", "kayla_password", "kayla@gmail.com");
         var response = facade.login("kayla", "kayla_password");
         assertNotNull(response.authToken());
@@ -75,7 +75,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void login_wrongPassword_fails() throws Exception {
+    void loginWrongPasswordFails() throws Exception {
         facade.register("kara", "correct_password", "kara@gmail.com");
         assertThrows(ResponseException.class, () -> {
             facade.login("kara", "incorrect_password");
@@ -85,7 +85,7 @@ public class ServerFacadeTests {
     // ---------- Logout Tests ----------
 
     @Test
-    void logout_validUser_success() throws Exception {
+    void logoutValidUserSuccess() throws Exception {
         var regResponse = facade.register("user1", "password1", "user1@gmail.com");
         String authToken = regResponse.authToken();
         // Logout should succeed without throwing
@@ -96,7 +96,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void logout_invalidToken_fails() {
+    void logoutInvalidTokenFails() {
         assertThrows(ResponseException.class, () -> {
             facade.logout("invalid-token");
         });
@@ -105,7 +105,7 @@ public class ServerFacadeTests {
     // ---------- Create Game Tests ----------
 
     @Test
-    void createGame_validAuth_success() throws Exception {
+    void createGameValidAuthSuccess() throws Exception {
         // Generate a unique username using System.nanoTime()
         String uniqueUsername = "gameUser" + System.nanoTime();
         var regResponse = facade.register(uniqueUsername, "password", uniqueUsername + "@example.com");
@@ -117,7 +117,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void createGame_invalidAuth_fails() {
+    void createGameInvalidAuthFails() {
         assertThrows(ResponseException.class, () -> {
             facade.createGame("invalid-token", "TestGame");
         });
@@ -126,7 +126,7 @@ public class ServerFacadeTests {
     // ---------- List Games Tests ----------
 
     @Test
-    void listGames_validAuth_success() throws Exception {
+    void listGamesValidAuthSuccess() throws Exception {
         var regResponse = facade.register("listUser", "password", "listUser@gmail.com");
         String authToken = regResponse.authToken();
         currentAuthToken = authToken;
@@ -142,7 +142,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void listGames_invalidAuth_fails() {
+    void listGamesInvalidAuthFails() {
         assertThrows(ResponseException.class, () -> {
             facade.listGames("invalid-token");
         });
@@ -151,7 +151,7 @@ public class ServerFacadeTests {
     // ---------- Join Game Tests ----------
 
     @Test
-    void joinGame_validParams_success() throws Exception {
+    void joinGameValidParamsSuccess() throws Exception {
         var regResponse = facade.register("joinUser", "password", "joinUser@gmail.com");
         String authToken = regResponse.authToken();
         currentAuthToken = authToken;
@@ -164,7 +164,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void joinGame_nonexistentGame_fails() throws Exception {
+    void joinGameNonexistentGameFails() throws Exception {
         var regResponse = facade.register("joinFailUser", "password", "joinFailUser@gmail.com");
         String authToken = regResponse.authToken();
         currentAuthToken = authToken;
@@ -175,7 +175,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void joinGame_invalidAuth_fails() {
+    void joinGameInvalidAuthFails() {
         assertThrows(ResponseException.class, () -> {
             facade.joinGame("invalid-token", 1, "BLACK");
         });
@@ -200,7 +200,7 @@ public class ServerFacadeTests {
 //    }
 
     @Test
-    void observeGame_nonexistentGame_fails() throws Exception {
+    void observeGameNonexistentGameFails() throws Exception {
         // Register a new user
         var regResponse = facade.register("observeFailUser", "password", "observeFailUser@gmail.com");
         String authToken = regResponse.authToken();
