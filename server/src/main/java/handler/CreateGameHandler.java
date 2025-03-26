@@ -48,76 +48,39 @@ public class CreateGameHandler extends BaseHandler<CreateGameRequest> {
      * @param res The Spark Response object.
      * @return A JSON response indicating success or failure.
      */
-//    @Override
-//    protected Object handleRequest(CreateGameRequest request, Request req, Response res) {
-//        String authToken = getAuthToken(req);  // Get the auth token from the request header
-//
-//        // Return `401 Unauthorized` if the auth token is missing or empty
-//        if (authToken == null || authToken.isEmpty()) {
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: Missing auth token"));
-//        }
-//
-//        try {
-//            // Verify the auth token and get the associated username
-//            String username = authService.getUserFromAuth(authToken);
-//
-//            // Return `401 Unauthorized` if the token is invalid or does not correspond to a user
-//            if (username == null) {
-//                res.status(401);
-//                return gson.toJson(Map.of("message", "Error: Unauthorized"));
-//            }
-//
-//            // Create a new game and assign it a unique game ID
-//            int gameID = gameService.createGame(request.gameName());
-//
-//
-//            // Return a success response with the generated game ID
-//            res.status(200);
-//            return gson.toJson(new CreateGameResponse(gameID));
-//
-//        } catch (DataAccessException e) {
-//            // Return `401 Unauthorized` if there is an issue with the database or username validation
-//            res.status(401);
-//            return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
-//        }
-//    }
-
     @Override
     protected Object handleRequest(CreateGameRequest request, Request req, Response res) {
         String authToken = getAuthToken(req);  // Get the auth token from the request header
-        System.out.println("[DEBUG] In CreateGameHandler: Received authToken: " + authToken);
 
+        // Return `401 Unauthorized` if the auth token is missing or empty
         if (authToken == null || authToken.isEmpty()) {
             res.status(401);
-            System.out.println("[DEBUG] Missing auth token.");
             return gson.toJson(Map.of("message", "Error: Missing auth token"));
         }
 
         try {
-            // Retrieve username using auth token
+            // Verify the auth token and get the associated username
             String username = authService.getUserFromAuth(authToken);
-            System.out.println("[DEBUG] Retrieved username from auth token: " + username);
 
+            // Return `401 Unauthorized` if the token is invalid or does not correspond to a user
             if (username == null) {
                 res.status(401);
-                System.out.println("[DEBUG] Auth token is invalid (username is null).");
                 return gson.toJson(Map.of("message", "Error: Unauthorized"));
             }
 
-            System.out.println("[DEBUG] Request game name: " + request.gameName());
-            // Create a new game without joining the user.
+            // Create a new game and assign it a unique game ID
             int gameID = gameService.createGame(request.gameName());
-            System.out.println("[DEBUG] Game created with ID: " + gameID);
 
+
+            // Return a success response with the generated game ID
             res.status(200);
             return gson.toJson(new CreateGameResponse(gameID));
+
         } catch (DataAccessException e) {
+            // Return `401 Unauthorized` if there is an issue with the database or username validation
             res.status(401);
-            System.out.println("[DEBUG] DataAccessException in CreateGameHandler: " + e.getMessage());
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
-
 
 }

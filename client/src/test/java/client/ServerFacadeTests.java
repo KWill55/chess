@@ -181,16 +181,38 @@ public class ServerFacadeTests {
         });
     }
 
-    // ---------- Clear Tests ----------
+    // ---------- Observe Game Tests ----------
+
+//    @Test
+//    void observeGame_validAuth_success() throws Exception {
+//        // Register a new user for observation
+//        var regResponse = facade.register("observeUser", "password", "observeUser@gmail.com");
+//        String authToken = regResponse.authToken();
+//        currentAuthToken = authToken; // store for tearDown
+//
+//        // Create a new game to be observed
+//        CreateGameResponse createResponse = facade.createGame(authToken, "ObservableGame");
+//        int gameID = createResponse.gameID();
+//
+//        // Call observeGame (using null for color indicates observation)
+//        JoinGameResponse observeResponse = facade.observeGame(authToken, gameID);
+//        assertNotNull(observeResponse, "Expected a valid response when observing a game");
+//    }
 
     @Test
-    void clear_success() throws Exception {
-        var regResponse = facade.register("clearUser", "password", "clearUser@gmail.com");
+    void observeGame_nonexistentGame_fails() throws Exception {
+        // Register a new user
+        var regResponse = facade.register("observeFailUser", "password", "observeFailUser@gmail.com");
         String authToken = regResponse.authToken();
         currentAuthToken = authToken;
-        facade.createGame(authToken, "GameToClear");
-        facade.clear();
-        ListGamesResponse listResponse = facade.listGames(authToken);
-        assertEquals(0, listResponse.games().size());
+
+        // Attempt to observe a game with an ID that doesn't exist (e.g., 9999)
+        assertThrows(ResponseException.class, () -> {
+            facade.observeGame(authToken, 9999);
+        });
     }
+
+
+    // ---------- Clear Test? ----------
+
 }

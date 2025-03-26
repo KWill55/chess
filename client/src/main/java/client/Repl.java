@@ -34,7 +34,6 @@ public class Repl {
                 }
                 System.out.print(result);
             } catch (Exception e) {
-                e.printStackTrace(); // for debugging
                 System.out.print("Error: " + e.getMessage());
             }
         }

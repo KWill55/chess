@@ -63,6 +63,7 @@ public class Server {
         Spark.delete("/session", new LogoutHandler(authService));              // User logout
         Spark.get("/game", new ListGamesHandler(gameService, authService));    // List available games
         Spark.post("/game", new CreateGameHandler(gameService, authService));  // Create a new game
+//        Spark.put("/game", new ObserveGameHandler(gameService, authService)); //Observe game
         Spark.put("/game", new JoinGameHandler(gameService, authService));     // Join an existing game
         Spark.delete("/db", new ClearHandler(userService, authService, gameService)); // Clear all data
 

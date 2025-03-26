@@ -34,8 +34,14 @@ public class ServerFacade {
     //quit and help don't interact with the server, so are therefore only in repl
 
     public LogoutResponse logout(String authToken) throws ResponseException {
-        return makeRequest("DELETE", "/session", null, LogoutResponse.class, authToken);
+        LogoutResponse response = makeRequest("DELETE", "/session", null, LogoutResponse.class, authToken);
+        // If the logout response is empty, create a new empty LogoutResponse.
+        if (response == null) {
+            return new LogoutResponse();
+        }
+        return response;
     }
+
 
     public CreateGameResponse createGame(String authToken, String gameName) throws ResponseException {
         var request = new CreateGameRequest(gameName); // ONLY the game name
@@ -56,9 +62,11 @@ public class ServerFacade {
 
     //observe game
     public JoinGameResponse observeGame(String authToken, int gameID) throws ResponseException {
-        var request = new JoinGameRequest(null, gameID); // null color = observe
-        return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
+        // Create a JoinGameRequest with a null player color to indicate observation.
+        var request = new JoinGameRequest(null, gameID);
+        return makeRequest("PUT", "/observe", request, JoinGameResponse.class, authToken);
     }
+
 
     // ---------- Clear Method ----------
 
@@ -127,17 +135,21 @@ public class ServerFacade {
 
 
     private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
-        T response = null;
-        if (http.getContentLength() < 0) {
-            try (InputStream respBody = http.getInputStream()) {
-                InputStreamReader reader = new InputStreamReader(respBody);
-                if (responseClass != null) {
-                    response = new Gson().fromJson(reader, responseClass);
-                }
-            }
+        if (http.getResponseCode() == 204) {  // No Content
+            return null;
         }
-        return response;
+
+        try (InputStream respBody = http.getInputStream()) {
+            String rawResponse = new String(respBody.readAllBytes());
+            System.out.println("[DEBUG] Raw response: " + rawResponse);
+            if (responseClass != null) {
+                return new Gson().fromJson(rawResponse, responseClass);
+            }
+            return null;
+        }
     }
+
+
 
     private boolean isSuccessful(int status) {
         return status / 100 == 2;

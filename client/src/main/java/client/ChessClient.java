@@ -31,7 +31,7 @@ public class ChessClient {
                 case "creategame" -> createGame();
                 case "listgames" -> listGames();
                 case "joingame" -> joinGame(params);
-//                case "observe" -> observeGame(params);
+                case "observe" -> observeGame(params);
                 case "quit" -> "quit";
                 case "help" -> help();
                 case "clear" -> clearDatabase();
@@ -103,6 +103,16 @@ public class ChessClient {
         int gameID = Integer.parseInt(params[0]);
         var response = server.joinGame(authToken, gameID, params[1].toUpperCase());
         return "Joined game " + gameID + " as " + params[1].toUpperCase();
+    }
+
+    public String observeGame(String... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length != 1) {
+            throw new ResponseException(400, "Usage: observe <gameID>");
+        }
+        int gameID = Integer.parseInt(params[0]);
+        var response = server.observeGame(authToken, gameID);
+        return "Now observing game " + gameID;
     }
 
     public String help() {

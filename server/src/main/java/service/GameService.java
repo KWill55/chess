@@ -38,29 +38,13 @@ public class GameService {
      * @return The unique game ID assigned to the new game.
      * @throws DataAccessException If there's an issue creating the game.
      */
-//    public int createGame(String gameName) throws DataAccessException {
-//        ChessGame newGame = new ChessGame(); // Create a new ChessGame instance
-//        GameData gameData = new GameData(0, null, null, gameName, newGame); // Default values for game
-//        int gameID = gameDAO.createGame(gameData); // Store in database
-//        System.out.println("GameService: gameName = " + gameName);
-//        return gameID; // Return the assigned game ID
-//    }
-
     public int createGame(String gameName) throws DataAccessException {
         ChessGame newGame = new ChessGame(); // Create a new ChessGame instance
-        // Here you create GameData with both whiteUsername and blackUsername as null.
-        // Print out the values to see what’s being passed.
-        System.out.println("[DEBUG] GameService.createGame: gameName = " + gameName);
-        System.out.println("[DEBUG] GameService.createGame: whiteUsername = " + null + ", blackUsername = " + null);
-
-        GameData gameData = new GameData(0, null, null, gameName, newGame);
+        GameData gameData = new GameData(0, null, null, gameName, newGame); // Default values for game
         int gameID = gameDAO.createGame(gameData); // Store in database
-        System.out.println("[DEBUG] GameService.createGame: Returned gameID = " + gameID);
-        return gameID;
+        System.out.println("GameService: gameName = " + gameName);
+        return gameID; // Return the assigned game ID
     }
-
-
-
 
     /**
      * Retrieves a specific game by its unique game ID.
