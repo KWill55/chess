@@ -64,23 +64,7 @@ public class ServerFacade {
     //observe game
     public void observeGame(String authToken, int gameID) throws ResponseException {
         var request = new JoinGameRequest(null, gameID);
-//        return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
     }
-
-//    public void observeGame(int gameID, String authToken) throws Exception {
-//        var body = Map.of(
-//                "gameID", gameID,
-//                "playerColor", null
-//        );
-//
-//        var response = this.makePostRequest("/game/join", body, authToken);
-//
-//        if (response.statusCode() != 200) {
-//            throw new Exception("Error: " + response.body());
-//        }
-//    }
-
-
 
     // ---------- Clear Method ----------
 

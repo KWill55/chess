@@ -183,22 +183,6 @@ public class ServerFacadeTests {
 
     // ---------- Observe Game Tests ----------
 
-//    @Test
-//    void observeGame_validAuth_success() throws Exception {
-//        // Register a new user for observation
-//        var regResponse = facade.register("observeUser", "password", "observeUser@gmail.com");
-//        String authToken = regResponse.authToken();
-//        currentAuthToken = authToken; // store for tearDown
-//
-//        // Create a new game to be observed
-//        CreateGameResponse createResponse = facade.createGame(authToken, "ObservableGame");
-//        int gameID = createResponse.gameID();
-//
-//        // Call observeGame (using null for color indicates observation)
-//        JoinGameResponse observeResponse = facade.observeGame(authToken, gameID);
-//        assertNotNull(observeResponse, "Expected a valid response when observing a game");
-//    }
-
     @Test
     void observeGameNonexistentGameFails() throws Exception {
         // Register a new user

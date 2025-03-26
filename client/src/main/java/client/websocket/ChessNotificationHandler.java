@@ -1,6 +1,6 @@
 package client.websocket;
 
-import webSocketMessages.Notification;
+import websocketmessages.Notification;
 
 public class ChessNotificationHandler implements NotificationHandler {
     @Override
