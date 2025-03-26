@@ -4,6 +4,8 @@ import client.websocket.NotificationHandler;
 import exception.ResponseException;
 import model.*;
 import client.ServerFacade;
+import chess.*;
+import ui.DrawBoard;
 
 import java.util.Arrays;
 
@@ -102,6 +104,14 @@ public class ChessClient {
         }
         int gameID = Integer.parseInt(params[0]);
         var response = server.joinGame(authToken, gameID, params[1].toUpperCase());
+
+
+        ChessGame newGame = new ChessGame();
+        ChessBoard currentBoard = newGame.getBoard();
+        DrawBoard board = new DrawBoard(currentBoard);
+        board.drawBoard();
+
+
         return "Joined game " + gameID + " as " + params[1].toUpperCase();
     }
 
