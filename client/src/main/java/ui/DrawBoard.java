@@ -19,9 +19,6 @@ public class DrawBoard {
     }
 
     public void drawBoard() {
-        System.out.println("Perspective: " + playerColor);
-        System.out.println("Perspective detected: " + playerColor);
-        System.out.println("Equals WHITE? " + playerColor.equals("WHITE"));
 
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
@@ -68,9 +65,9 @@ public class DrawBoard {
 
                 // Set background color for the square.
                 if ((row + col) % 2 == 0) {
-                    out.print(SET_BG_COLOR_LIGHT_GREY);
-                } else {
                     out.print(SET_BG_COLOR_DARK_GREY);
+                } else {
+                    out.print(SET_BG_COLOR_LIGHT_GREY);
                 }
 
                 if (piece == null) {

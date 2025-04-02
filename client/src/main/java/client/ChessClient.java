@@ -87,87 +87,169 @@ public class ChessClient {
 
     public String createGame(String... params) throws ResponseException {
         if (params.length != 1) {
-            throw new ResponseException(400, "createGame format: createGame <gameName>");
+            throw new ResponseException(400, "createGame format: createGame <game name>");
         }
 
         String gameName = params[0];
         var response = server.createGame(authToken, gameName);
-        return "Game created with ID: " + response.gameID();
+        return "Game created";
     }
 
 
     public String listGames() throws ResponseException {
         assertSignedIn();
         var response = server.listGames(authToken);
-        var builder = new StringBuilder("Available games:\n");
+        var builder = new StringBuilder("available games\n");
+        int gameNumber = 1;
+
+        if (response.games().size() == 0){
+            System.out.print("There are no ");
+        }
+
         for (var game : response.games()) {
-            builder.append("ID: ").append(game.gameID())
-                    .append(" | Name: ").append(game.gameName()).append("\n");
+            String blackUser = (game.blackUsername() != null) ? game.blackUsername() : "Empty";
+            String whiteUser = (game.whiteUsername() != null) ? game.whiteUsername() : "Empty";
+
+            builder.append("Game: ").append(gameNumber++)
+                    .append("\n | Name: ").append(game.gameName()).append("\n")
+                    .append(" | Black User : ").append(blackUser).append("\n")
+                    .append(" | White User: ").append(whiteUser).append("\n");
         }
         return builder.toString();
     }
+
+    //oops this was using gameName, not game number
+//    public String joinGame(String... params) throws ResponseException {
+//        assertSignedIn();
+//
+//        if (params.length != 2) {
+//            throw new ResponseException(400, "joinGame format: joinGame <gameName> <WHITE|BLACK>");
+//        }
+//
+//        try{
+//            String gameName = params[0];
+//            String playerColor = params[1].toUpperCase();
+//
+//            var response = server.listGames(authToken);
+//            int gameID = 0;
+//            for (var game : response.games()) {
+//                if (game.gameName().equalsIgnoreCase(gameName)) {
+//                    gameID = game.gameID();
+//                    break;
+//                }
+//            }
+//
+//            if (gameID == 0) {
+//                throw new ResponseException(404, "Game '" + gameName + "' not found.");
+//            }
+//
+//            var joinResponse = server.joinGame(authToken, gameID, playerColor);
+//
+//            // For white's perspective:
+//            ChessGame newGame = new ChessGame();
+//            ChessBoard board = newGame.getBoard();
+//
+//            if (playerColor.equals("WHITE")){
+//                DrawBoard whiteBoard = new DrawBoard(board, playerColor);
+//                whiteBoard.drawBoard();
+//            }
+//            else if (playerColor.equals("BLACK")){
+//                DrawBoard blackBoard = new DrawBoard(board, playerColor);
+//                blackBoard.drawBoard();
+//            }else{
+//                throw new IllegalArgumentException("Invalid player color: " + playerColor);
+//            }
+//
+//            return "Joined game " + gameName + " as " + params[1].toUpperCase();
+//        }
+//        catch (ResponseException e){
+//            return "Error: Invalid Game Request";
+//        }
+//    }
 
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
 
         if (params.length != 2) {
-            throw new ResponseException(400, "joinGame format: joinGame <gameID> <WHITE|BLACK>");
+            throw new ResponseException(400, "joinGame format: joinGame <game number> <WHITE|BLACK>");
         }
 
-        try{
-            int gameID = Integer.parseInt(params[0]);
+        try {
+            int gameNumber = Integer.parseInt(params[0]);
             String playerColor = params[1].toUpperCase();
-            var response = server.joinGame(authToken, gameID, playerColor);
 
-            // For white's perspective:
-            ChessGame newGame = new ChessGame();
-            ChessBoard board = newGame.getBoard();
+            var response = server.listGames(authToken);
+            var games = response.games();
 
-            if (playerColor.equals("WHITE")){
-                DrawBoard whiteBoard = new DrawBoard(board, playerColor);
-                whiteBoard.drawBoard();
+            if (gameNumber < 1 || gameNumber > games.size()) {
+                throw new ResponseException(404, "Game number " + gameNumber + " does not exist.");
             }
-            else if (playerColor.equals("BLACK")){
-                DrawBoard blackBoard = new DrawBoard(board, playerColor);
-                blackBoard.drawBoard();
-            }else{
+
+            //get Game ID
+            var selectedGame = games.get(gameNumber - 1); //0 indexed
+            int gameID = selectedGame.gameID();
+
+            if (playerColor.equals("WHITE")) {
+                if (selectedGame.whiteUsername() != null) {
+                    throw new ResponseException(403, "White player slot is already taken.");
+                }
+            } else if (playerColor.equals("BLACK")) {
+                if (selectedGame.blackUsername() != null) {
+                    throw new ResponseException(403, "Black player slot is already taken.");
+                }
+            } else {
                 throw new IllegalArgumentException("Invalid player color: " + playerColor);
             }
 
-            return "Joined game " + gameID + " as " + params[1].toUpperCase();
-        }
-        catch (ResponseException e){
-            return "Error: Invalid Game Request";
+            var joinResponse = server.joinGame(authToken, gameID, playerColor);
+
+            // Set up the board
+            ChessGame newGame = new ChessGame();
+            ChessBoard board = newGame.getBoard();
+            DrawBoard drawBoard = new DrawBoard(board, playerColor);
+            drawBoard.drawBoard();
+
+            return "Joined Game " + gameNumber + " as " + playerColor;
+        } catch (NumberFormatException e) {
+            throw new ResponseException(400, params[0] + " is not a valid game number.");
         }
     }
 
+
     public String observeGame(String... params) throws ResponseException {
         assertSignedIn();
+
         if (params.length != 1) {
-            throw new ResponseException(400, "observeGame format: observe <gameID>");
+            throw new ResponseException(400, "observeGame format: observe <game ID>");
         }
+        ChessGame newGame = new ChessGame();
+        ChessBoard board = newGame.getBoard();
+        DrawBoard whiteBoard = new DrawBoard(board, "WHITE");
+        whiteBoard.drawBoard();
 
-        try{
-            int gameID = Integer.parseInt(params[0]);
-            var response = server.joinGame(authToken, gameID,null);
+        return "success";
 
-            // For white's perspective:
-            ChessGame newObserveGame = new ChessGame();
-            ChessBoard observeBoard = newObserveGame.getBoard();
-            DrawBoard drawObserveBoard = new DrawBoard(observeBoard, "WHITE");
-            drawObserveBoard.drawBoard();
-            return "Joined game " + gameID + " as observer";
-        } catch (ResponseException e) {
-            System.out.println("[DEBUG] Server rejected observe request: " + e.getMessage());
-            return "Error: Invalid Observe Request - " + e.getMessage();
-        } catch (NumberFormatException e) {
-            System.out.println("[DEBUG] Failed to parse game ID: " + params[0]);
-            return "Error: Invalid game ID format.";
-        } catch (Exception e) {
-            System.out.println("[DEBUG] Unexpected error in observeGame: " + e.getMessage());
-            e.printStackTrace();  // Optional: comment this out later
-            return "Error: Unexpected issue while trying to observe.";
-        }
+//        try{
+//            int gameID = Integer.parseInt(params[0]);
+//            var response = server.joinGame(authToken, gameID,null);
+//
+//            // For white's perspective:
+//            ChessGame newObserveGame = new ChessGame();
+//            ChessBoard observeBoard = newObserveGame.getBoard();
+//            DrawBoard drawObserveBoard = new DrawBoard(observeBoard, "WHITE");
+//            drawObserveBoard.drawBoard();
+//            return "Joined game " + gameID + " as observer";
+//        } catch (ResponseException e) {
+//            System.out.println("[DEBUG] Server rejected observe request: " + e.getMessage());
+//            return "Error: Invalid Observe Request - " + e.getMessage();
+//        } catch (NumberFormatException e) {
+//            System.out.println("[DEBUG] Failed to parse game ID: " + params[0]);
+//            return "Error: Invalid game ID format.";
+//        } catch (Exception e) {
+//            System.out.println("[DEBUG] Unexpected error in observeGame: " + e.getMessage());
+//            e.printStackTrace();
+//            return "Error: Unexpected issue while trying to observe.";
+//        }
     }
 
     public String help() {
