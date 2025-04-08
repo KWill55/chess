@@ -25,7 +25,7 @@ public class WebSocketHandler {
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case CONNECT -> handleConnect(command, session);
-            case MAKE_MOVE -> System.out.println("⚠️ MAKE_MOVE not implemented yet");
+            case MAKE_MOVE -> System.out.println("⚠️not implemented yet"); //->handleMakeMove(command);
             case LEAVE -> System.out.println("⚠️ LEAVE not implemented yet");
             case RESIGN -> System.out.println("⚠️ RESIGN not implemented yet");
         }

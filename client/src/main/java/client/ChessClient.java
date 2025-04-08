@@ -4,6 +4,7 @@ import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import chess.*;
+import model.GameData;
 import ui.DrawBoard;
 
 import java.util.Arrays;
@@ -122,54 +123,25 @@ public class ChessClient {
         return builder.toString();
     }
 
-    //oops this was using gameName, not game number
-//    public String joinGame(String... params) throws ResponseException {
-//        assertSignedIn();
-//
-//        if (params.length != 2) {
-//            throw new ResponseException(400, "joinGame format: joinGame <gameName> <WHITE|BLACK>");
-//        }
-//
-//        try{
-//            String gameName = params[0];
-//            String playerColor = params[1].toUpperCase();
-//
-//            var response = server.listGames(authToken);
-//            int gameID = 0;
-//            for (var game : response.games()) {
-//                if (game.gameName().equalsIgnoreCase(gameName)) {
-//                    gameID = game.gameID();
-//                    break;
-//                }
-//            }
-//
-//            if (gameID == 0) {
-//                throw new ResponseException(404, "Game '" + gameName + "' not found.");
-//            }
-//
-//            var joinResponse = server.joinGame(authToken, gameID, playerColor);
-//
-//            // For white's perspective:
-//            ChessGame newGame = new ChessGame();
-//            ChessBoard board = newGame.getBoard();
-//
-//            if (playerColor.equals("WHITE")){
-//                DrawBoard whiteBoard = new DrawBoard(board, playerColor);
-//                whiteBoard.drawBoard();
-//            }
-//            else if (playerColor.equals("BLACK")){
-//                DrawBoard blackBoard = new DrawBoard(board, playerColor);
-//                blackBoard.drawBoard();
-//            }else{
-//                throw new IllegalArgumentException("Invalid player color: " + playerColor);
-//            }
-//
-//            return "Joined game " + gameName + " as " + params[1].toUpperCase();
-//        }
-//        catch (ResponseException e){
-//            return "Error: Invalid Game Request";
-//        }
-//    }
+    public void makeMove(int gameID, String from, String to) {
+        System.out.printf("🕹️ Making move: %s -> %s (game %d)%n", from, to, gameID);
+        // TODO: Send WebSocket MAKE_MOVE command
+    }
+
+    public void redrawBoard() {
+        System.out.println("🔄 Redrawing board...");
+        // TODO: Actually reprint most recent board if you store one
+    }
+
+    public void resignGame(int gameID) {
+        System.out.printf("☠️ Resigned from game %d%n", gameID);
+        // TODO: Send WebSocket RESIGN command
+    }
+
+    public void leaveGame(int gameID) {
+        System.out.printf("🏃 Left game %d%n", gameID);
+        // TODO: Send WebSocket LEAVE command
+    }
 
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
@@ -214,7 +186,21 @@ public class ChessClient {
             DrawBoard drawBoard = new DrawBoard(board, playerColor);
             drawBoard.drawBoard();
 
-            return "Joined Game " + gameNumber + " as " + playerColor;
+            GameData joinedGame = null;
+            for (GameData g : games) {
+                if (g.gameID() == gameID) {
+                    joinedGame = g;
+                    break;
+                }
+            }
+            if (joinedGame == null) {
+                return "Error: Game not found.";
+            }
+            GameRepl gameRepl = new GameRepl(this, joinedGame, playerColor);
+            gameRepl.run();
+
+
+            return "Exited Game " + gameNumber + ".";
         } catch (NumberFormatException e) {
             throw new ResponseException(400, params[0] + " is not a valid game number.");
         }

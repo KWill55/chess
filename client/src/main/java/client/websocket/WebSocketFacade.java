@@ -39,7 +39,7 @@ public class WebSocketFacade extends Endpoint {
                             break;
                         case LOAD_GAME:
                             // Handle board redraw or pass to another handler
-                            System.out.println("Received LOAD_GAME message.");
+//                            System.out.println("Received LOAD_GAME message.");
                             break;
                         case ERROR:
                             System.err.println("Received error from server: " + message);
