@@ -26,7 +26,7 @@ public class WebSocketHandler {
         switch (command.getCommandType()) {
             case CONNECT -> handleConnect(command, session);
             case MAKE_MOVE -> System.out.println("⚠️not implemented yet"); //->handleMakeMove(command);
-            case LEAVE -> System.out.println("⚠️ LEAVE not implemented yet");
+            case LEAVE -> handleLeave(command, session);
             case RESIGN -> System.out.println("⚠️ RESIGN not implemented yet");
         }
     }
@@ -71,4 +71,30 @@ public class WebSocketHandler {
             session.getRemote().sendString(gson.toJson(error));
         }
     }
+
+    private void handleLeave(UserGameCommand command, Session session) {
+        int gameID = command.getGameID();
+        String authToken = command.getAuthToken();
+
+        try {
+            AuthDAO authDAO = new SQLAuthDAO();
+            String username = authDAO.getAuth(authToken).username();
+
+            // Remove the session from the list
+            ArrayList<Session> sessions = gameSessions.get(gameID);
+            sessions.remove(session);
+
+            // Notify others
+            ServerMessage notify = new NotificationMessage(username + " left the game.");
+            for (Session s : sessions) {
+                if (s.isOpen()) {
+                    s.getRemote().sendString(gson.toJson(notify));
+                }
+            }
+
+        } catch (DataAccessException | IOException e) {
+            e.printStackTrace(); // optional debug logging
+        }
+    }
+
 }

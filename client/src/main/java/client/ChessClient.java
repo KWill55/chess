@@ -6,6 +6,7 @@ import exception.ResponseException;
 import chess.*;
 import model.GameData;
 import ui.DrawBoard;
+import websocket.commands.UserGameCommand;
 
 import java.util.Arrays;
 
@@ -139,9 +140,14 @@ public class ChessClient {
     }
 
     public void leaveGame(int gameID) {
-        System.out.printf("🏃 Left game %d%n", gameID);
-        // TODO: Send WebSocket LEAVE command
+        try {
+            UserGameCommand leaveCmd = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+            webSocket.send(leaveCmd);
+        } catch (Exception e) {
+            System.out.println("Failed to leave game: " + e.getMessage());
+        }
     }
+
 
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
