@@ -27,7 +27,7 @@ public class WebSocketHandler {
             case CONNECT -> handleConnect(command, session);
             case MAKE_MOVE -> System.out.println("⚠️not implemented yet"); //->handleMakeMove(command);
             case LEAVE -> handleLeave(command, session);
-            case RESIGN -> System.out.println("⚠️ RESIGN not implemented yet");
+            case RESIGN -> handleResign(command, session);
         }
     }
 
@@ -96,5 +96,28 @@ public class WebSocketHandler {
             e.printStackTrace(); // optional debug logging
         }
     }
+
+    private void handleResign(UserGameCommand command, Session session) {
+        int gameID = command.getGameID();
+        String authToken = command.getAuthToken();
+
+        try {
+            AuthDAO authDAO = new SQLAuthDAO();
+            String username = authDAO.getAuth(authToken).username();
+
+            String text = username + " has resigned. Game over.";
+            ServerMessage resignMessage = new NotificationMessage(text);
+
+            for (Session s : gameSessions.get(gameID)) {
+                if (s.isOpen()) {
+                    s.getRemote().sendString(gson.toJson(resignMessage));
+                }
+            }
+
+        } catch (DataAccessException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

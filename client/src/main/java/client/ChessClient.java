@@ -125,19 +125,28 @@ public class ChessClient {
     }
 
     public void makeMove(int gameID, String from, String to) {
-        System.out.printf("🕹️ Making move: %s -> %s (game %d)%n", from, to, gameID);
+        System.out.printf("Making move: %s -> %s (game %d)%n", from, to, gameID);
         // TODO: Send WebSocket MAKE_MOVE command
     }
 
     public void redrawBoard() {
-        System.out.println("🔄 Redrawing board...");
+        System.out.println("Redrawing board...");
         // TODO: Actually reprint most recent board if you store one
     }
 
     public void resignGame(int gameID) {
-        System.out.printf("☠️ Resigned from game %d%n", gameID);
-        // TODO: Send WebSocket RESIGN command
+        try {
+            UserGameCommand resignCmd = new UserGameCommand(
+                    UserGameCommand.CommandType.RESIGN,
+                    authToken,
+                    gameID
+            );
+            webSocket.send(resignCmd);
+        } catch (ResponseException e) {
+            System.out.println("Error resigning: " + e.getMessage());
+        }
     }
+
 
     public void leaveGame(int gameID) {
         try {
@@ -147,7 +156,6 @@ public class ChessClient {
             System.out.println("Failed to leave game: " + e.getMessage());
         }
     }
-
 
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
