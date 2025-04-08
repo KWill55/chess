@@ -51,27 +51,31 @@ public class Server {
      * @return The actual port the server is running on.
      */
     public int run(int desiredPort) {
-        System.out.println("Server running on port: " + desiredPort);
         Spark.port(desiredPort);
 
-        // Serves static files (if applicable)
+        // Register WebSocket BEFORE routes!
+        WebSocketHandler webSocketHandler = new WebSocketHandler();
+        Spark.webSocket("/ws", webSocketHandler);
+
         Spark.staticFiles.location("web");
 
-        // Define API routes and attach corresponding request handlers
-        Spark.post("/user", new RegisterHandler(userService, authService));    // User registration
-        Spark.post("/session", new LoginHandler(userService, authService));    // User login
-        Spark.delete("/session", new LogoutHandler(authService));              // User logout
-        Spark.get("/game", new ListGamesHandler(gameService, authService));    // List available games
-        Spark.post("/game", new CreateGameHandler(gameService, authService));  // Create a new game
-//        Spark.put("/game", new ObserveGameHandler(gameService, authService)); //Observe game
-        Spark.put("/game", new JoinGameHandler(gameService, authService));     // Join an existing game
-        Spark.delete("/db", new ClearHandler(userService, authService, gameService)); // Clear all data
+        // Now it's safe to define your REST routes
+        Spark.post("/user", new RegisterHandler(userService, authService));
+        Spark.post("/session", new LoginHandler(userService, authService));
+        Spark.delete("/session", new LogoutHandler(authService));
+        Spark.get("/game", new ListGamesHandler(gameService, authService));
+        Spark.post("/game", new CreateGameHandler(gameService, authService));
+        Spark.put("/game", new JoinGameHandler(gameService, authService));
+        Spark.delete("/db", new ClearHandler(userService, authService, gameService));
 
-        // Initialize the Spark server
         Spark.init();
-        Spark.awaitInitialization(); // Wait for the server to start fully
+        Spark.awaitInitialization(); // Wait for full startup
+        System.out.println("♕ 240 Chess Server fully initialized!");
+
         return Spark.port();
     }
+
+
 
     /**
      * Retrieves the current port number the server is running on.

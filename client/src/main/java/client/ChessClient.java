@@ -1,6 +1,7 @@
 package client;
 
 import client.websocket.NotificationHandler;
+import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import chess.*;
 import ui.DrawBoard;
@@ -10,12 +11,15 @@ import java.util.Arrays;
 public class ChessClient {
     private final ServerFacade server;
     private final NotificationHandler notificationHandler;
+    private final int serverPort;
+    private WebSocketFacade webSocket;
     private String authToken = null;
     private State state = State.SIGNEDOUT;
 
     public ChessClient(int serverUrl, NotificationHandler notificationHandler) {
         this.server = new ServerFacade(serverUrl);
         this.notificationHandler = notificationHandler;
+        this.serverPort = serverUrl;
     }
 
     public String eval(String input) {
@@ -185,8 +189,7 @@ public class ChessClient {
                 throw new ResponseException(404, "Game number " + gameNumber + " does not exist.");
             }
 
-            //get Game ID
-            var selectedGame = games.get(gameNumber - 1); //0 indexed
+            var selectedGame = games.get(gameNumber - 1);
             int gameID = selectedGame.gameID();
 
             if (playerColor.equals("WHITE")) {
@@ -203,7 +206,9 @@ public class ChessClient {
 
             var joinResponse = server.joinGame(authToken, gameID, playerColor);
 
-            // Set up the board
+            this.webSocket = new WebSocketFacade("http://localhost:" + serverPort, notificationHandler);
+            webSocket.connectToGame(authToken, gameID);
+
             ChessGame newGame = new ChessGame();
             ChessBoard board = newGame.getBoard();
             DrawBoard drawBoard = new DrawBoard(board, playerColor);

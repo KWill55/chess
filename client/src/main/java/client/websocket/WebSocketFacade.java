@@ -6,6 +6,7 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 import websocket.messages.NotificationMessage;
 
+
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
@@ -31,7 +32,7 @@ public class WebSocketFacade extends Endpoint {
                 public void onMessage(String message) {
                     ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
 
-                    switch (serverMessage.serverMessageType) {
+                    switch (serverMessage.getServerMessageType()) {
                         case NOTIFICATION:
                             NotificationMessage notifyMsg = gson.fromJson(message, NotificationMessage.class);
                             notificationHandler.notify(notifyMsg);
@@ -59,10 +60,11 @@ public class WebSocketFacade extends Endpoint {
 
     public void connectToGame(String authToken, int gameID) throws ResponseException {
         try {
-            UserGameCommand command = new UserGameCommand();
-            command.commandType = UserGameCommand.CommandType.CONNECT;
-            command.authToken = authToken;
-            command.gameID = gameID;
+            UserGameCommand command = new UserGameCommand(
+                    UserGameCommand.CommandType.CONNECT,
+                    authToken,
+                    gameID
+            );
 
             this.session.getBasicRemote().sendText(gson.toJson(command));
         } catch (IOException ex) {

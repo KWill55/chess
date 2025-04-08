@@ -1,35 +1,33 @@
-package handler.websocket;
+package handler;
 
 import com.google.gson.Gson;
-import dataaccess.DataAccess;
-import dataaccess.Database;
-import model.Game;
+import dataaccess.*;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.UserGameCommand;
-import websocket.messages.LoadGameMessage;
-import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
+import websocket.messages.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 
 @WebSocket
 public class WebSocketHandler {
-
-    private final ConcurrentHashMap<Integer, List<Session>> gameSessions = new ConcurrentHashMap<>();
     private final Gson gson = new Gson();
+    private final HashMap<Integer, ArrayList<Session>> gameSessions = new HashMap<>();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
-        UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
+        System.out.println("📩 Incoming WebSocket message: " + message);
 
+        UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case CONNECT -> handleConnect(command, session);
-            // More cases like MAKE_MOVE, LEAVE, RESIGN go here later
+            case MAKE_MOVE -> System.out.println("⚠️ MAKE_MOVE not implemented yet");
+            case LEAVE -> System.out.println("⚠️ LEAVE not implemented yet");
+            case RESIGN -> System.out.println("⚠️ RESIGN not implemented yet");
         }
     }
 
@@ -37,27 +35,37 @@ public class WebSocketHandler {
         int gameID = command.getGameID();
         String authToken = command.getAuthToken();
 
+        System.out.println("📥 CONNECT received for gameID: " + gameID + ", authToken: " + authToken);
+
         // Add the session to the game
         gameSessions.putIfAbsent(gameID, new ArrayList<>());
         gameSessions.get(gameID).add(session);
 
-        // TODO: Validate authToken and gameID (e.g., check DB)
+        System.out.println("📌 Sessions in game " + gameID + ": " + gameSessions.get(gameID).size());
 
-        // Fetch the current game state (stubbed for now)
-        Game game = Database.getGame(gameID); // Replace with your real game fetch
+        try {
+            GameDAO gameDAO = new SQLGameDAO();
+            GameData gameData = gameDAO.getGame(gameID);
 
-        // Send LOAD_GAME to the root client
-        ServerMessage loadGame = new LoadGameMessage(game);
-        session.getRemote().sendString(gson.toJson(loadGame));
+            ServerMessage loadGame = new LoadGameMessage(gameData.game());
+            session.getRemote().sendString(gson.toJson(loadGame));
 
-        // Notify other clients
-        String notificationText = "A new player joined game " + gameID;
-        ServerMessage notify = new NotificationMessage(notificationText);
+            String notificationText = gameData.gameName() + " - " + authToken + " joined the game";
+            ServerMessage notify = new NotificationMessage(notificationText);
 
-        for (Session s : gameSessions.get(gameID)) {
-            if (s.isOpen() && !s.equals(session)) {
-                s.getRemote().sendString(gson.toJson(notify));
+            System.out.println("📣 Notification to send: " + notificationText);
+
+            for (Session s : gameSessions.get(gameID)) {
+                System.out.println("➡️ Attempting to send to session: " + s);
+                if (s.isOpen() && !s.equals(session)) {
+                    s.getRemote().sendString(gson.toJson(notify));
+                    System.out.println("✅ Sent to other client!");
+                }
             }
+
+        } catch (DataAccessException e) {
+            ServerMessage error = new NotificationMessage("Error: " + e.getMessage());
+            session.getRemote().sendString(gson.toJson(error));
         }
     }
 }

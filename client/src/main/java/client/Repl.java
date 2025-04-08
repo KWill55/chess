@@ -1,6 +1,5 @@
 package client;
 
-import client.websocket.ChessNotificationHandler;
 import client.websocket.NotificationHandler;
 
 import java.util.Scanner;
