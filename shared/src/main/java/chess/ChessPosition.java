@@ -47,11 +47,19 @@ public class ChessPosition {
         return Objects.hash(row, col);
     }
 
+//    @Override
+//    public String toString() {
+//        return "Pos{" +
+//                "row=" + row +
+//                ", col=" + col +
+//                '}';
+//    }
+
     @Override
     public String toString() {
-        return "Pos{" +
-                "row=" + row +
-                ", col=" + col +
-                '}';
+        char colChar = (char) ('a' + col);  // 0 → 'a', 1 → 'b', ...
+        int rowNum = row + 1;               // 0 → 1, 1 → 2, ...
+        return "" + colChar + rowNum;       // e.g., "e2"
     }
+
 }

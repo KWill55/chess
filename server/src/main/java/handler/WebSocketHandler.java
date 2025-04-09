@@ -1,5 +1,6 @@
 package handler;
 
+import chess.*;
 import com.google.gson.Gson;
 import dataaccess.*;
 import model.GameData;
@@ -25,7 +26,7 @@ public class WebSocketHandler {
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case CONNECT -> handleConnect(command, session);
-            case MAKE_MOVE -> System.out.println("⚠️not implemented yet"); //->handleMakeMove(command);
+            case MAKE_MOVE -> handleMove(command, session);
             case LEAVE -> handleLeave(command, session);
             case RESIGN -> handleResign(command, session);
         }
@@ -118,6 +119,95 @@ public class WebSocketHandler {
             e.printStackTrace();
         }
     }
+
+    private void handleMove(UserGameCommand command, Session session) throws IOException {
+        int gameID = command.getGameID();
+        ChessMove move = command.getMove();
+        String authToken = command.getAuthToken();
+
+        try {
+            AuthDAO authDAO = new SQLAuthDAO();
+            GameDAO gameDAO = new SQLGameDAO();
+
+            // Get the game and user
+            var auth = authDAO.getAuth(authToken);
+            var gameData = gameDAO.getGame(gameID);
+            ChessGame game = gameData.game();
+
+            //verify that player can only move player pieces
+            ChessGame.TeamColor playerColor = getPlayerColor(gameData, auth.username());
+            if (playerColor != game.getTeamTurn()) {
+                session.getRemote().sendString(gson.toJson(
+                        new NotificationMessage("Not your turn.")
+                ));
+                return;
+            }
+
+            // Verify that the piece belongs to the player
+            ChessPiece piece = game.getBoard().getPiece(move.getStartPosition());
+            if (piece == null || piece.getTeamColor() != playerColor) {
+                session.getRemote().sendString(gson.toJson(
+                        new NotificationMessage("Invalid move: You can only move your own pieces.")
+                ));
+                return;
+            }
+
+
+
+            // Make the move
+            game.makeMove(move);
+
+            String moveMessage = playerColor + " moved from " +
+                    move.getStartPosition().toString() + " to " + move.getEndPosition().toString();
+
+            ServerMessage notification = new NotificationMessage(moveMessage);
+
+
+            // Save the updated game
+            gameDAO.updateGame(new GameData(
+                    gameData.gameID(),
+                    gameData.whiteUsername(),
+                    gameData.blackUsername(),
+                    gameData.gameName(),
+                    game
+            ));
+
+
+            // Send updated board to all clients in the game
+            ServerMessage msg = new LoadGameMessage(game);
+            for (Session s : gameSessions.get(gameID)) {
+                if (s.isOpen()) s.getRemote().sendString(gson.toJson(msg));
+            }
+
+            // Send move notification to all clients
+            for (Session s : gameSessions.get(gameID)) {
+                if (s.isOpen()) {
+                    s.getRemote().sendString(gson.toJson(notification));
+                }
+            }
+
+
+        } catch (InvalidMoveException e) {
+            session.getRemote().sendString(gson.toJson(new NotificationMessage("Invalid move: " + e.getMessage())));
+        } catch (Exception e) {
+            session.getRemote().sendString(gson.toJson(new NotificationMessage("Server error: " + e.getMessage())));
+        }
+    }
+
+
+
+
+
+
+    private ChessGame.TeamColor getPlayerColor(GameData gameData, String username) {
+        if (username.equals(gameData.whiteUsername())) return ChessGame.TeamColor.WHITE;
+        if (username.equals(gameData.blackUsername())) return ChessGame.TeamColor.BLACK;
+        return null;
+    }
+
+
+
+
 
 
 }

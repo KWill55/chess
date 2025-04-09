@@ -125,9 +125,25 @@ public class ChessClient {
     }
 
     public void makeMove(int gameID, String from, String to) {
-        System.out.printf("Making move: %s -> %s (game %d)%n", from, to, gameID);
-        // TODO: Send WebSocket MAKE_MOVE command
+        try {
+            ChessPosition fromPos = parsePosition(from);
+            ChessPosition toPos = parsePosition(to);
+            ChessMove move = new ChessMove(fromPos, toPos, null); // handle promotion later
+
+            UserGameCommand command = new UserGameCommand(
+                    UserGameCommand.CommandType.MAKE_MOVE,
+                    authToken,
+                    gameID,
+                    move
+            );
+
+            webSocket.send(command);
+        } catch (Exception e) {
+            System.out.println("Invalid move: " + e.getMessage());
+        }
     }
+
+
 
     public void redrawBoard() {
         System.out.println("Redrawing board...");
@@ -205,11 +221,6 @@ public class ChessClient {
             webSocket.setPlayerColor(playerColor);
             webSocket.connectToGame(authToken, gameID);
 
-            ChessGame newGame = new ChessGame();
-            ChessBoard board = newGame.getBoard();
-            DrawBoard drawBoard = new DrawBoard(board, playerColor);
-            drawBoard.drawBoard();
-
             GameData joinedGame = null;
             for (GameData g : games) {
                 if (g.gameID() == gameID) {
@@ -283,6 +294,13 @@ public class ChessClient {
     private enum State {
         SIGNEDOUT,
         SIGNEDIN
+    }
+
+    private ChessPosition parsePosition(String pos) {
+        int col = pos.charAt(0) - 'a';                // 'a' = 0
+        int row = 8 - (pos.charAt(1) - '0');          // '1' = 7, ..., '8' = 0
+
+        return new ChessPosition(row + 1, col + 1);   // shift to 1-based indexing
     }
 }
 

@@ -89,11 +89,6 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-
-    // TODO: Add makeMove, leave, resign, etc. commands
-
-
-
     public ChessBoard getLatestBoard() {
         return latestBoard;
     }
