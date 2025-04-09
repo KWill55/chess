@@ -131,8 +131,17 @@ public class ChessClient {
 
     public void redrawBoard() {
         System.out.println("Redrawing board...");
-        // TODO: Actually reprint most recent board if you store one
+        ChessBoard board = webSocket.getLatestBoard();
+        String color = webSocket.getPlayerColor();
+        if (board == null || color == null) {
+            System.out.println("No board state available yet.");
+            return;
+        }
+        DrawBoard drawBoard = new DrawBoard(board, color);
+        drawBoard.drawBoard();
     }
+
+
 
     public void resignGame(int gameID) {
         try {
@@ -193,6 +202,7 @@ public class ChessClient {
             var joinResponse = server.joinGame(authToken, gameID, playerColor);
 
             this.webSocket = new WebSocketFacade("http://localhost:" + serverPort, notificationHandler);
+            webSocket.setPlayerColor(playerColor);
             webSocket.connectToGame(authToken, gameID);
 
             ChessGame newGame = new ChessGame();
@@ -229,32 +239,11 @@ public class ChessClient {
         }
         ChessGame newGame = new ChessGame();
         ChessBoard board = newGame.getBoard();
+        webSocket.setPlayerColor("WHITE");
         DrawBoard whiteBoard = new DrawBoard(board, "WHITE");
         whiteBoard.drawBoard();
 
         return "success";
-
-//        try{
-//            int gameID = Integer.parseInt(params[0]);
-//            var response = server.joinGame(authToken, gameID,null);
-//
-//            // For white's perspective:
-//            ChessGame newObserveGame = new ChessGame();
-//            ChessBoard observeBoard = newObserveGame.getBoard();
-//            DrawBoard drawObserveBoard = new DrawBoard(observeBoard, "WHITE");
-//            drawObserveBoard.drawBoard();
-//            return "Joined game " + gameID + " as observer";
-//        } catch (ResponseException e) {
-//            System.out.println("[DEBUG] Server rejected observe request: " + e.getMessage());
-//            return "Error: Invalid Observe Request - " + e.getMessage();
-//        } catch (NumberFormatException e) {
-//            System.out.println("[DEBUG] Failed to parse game ID: " + params[0]);
-//            return "Error: Invalid game ID format.";
-//        } catch (Exception e) {
-//            System.out.println("[DEBUG] Unexpected error in observeGame: " + e.getMessage());
-//            e.printStackTrace();
-//            return "Error: Unexpected issue while trying to observe.";
-//        }
     }
 
     public String help() {

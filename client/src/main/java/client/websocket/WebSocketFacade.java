@@ -1,8 +1,11 @@
 package client.websocket;
 
+import chess.ChessBoard;
 import com.google.gson.Gson;
 import exception.ResponseException;
+import ui.DrawBoard;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
 import websocket.messages.NotificationMessage;
 
@@ -17,6 +20,9 @@ public class WebSocketFacade extends Endpoint {
     private Session session;
     private final NotificationHandler notificationHandler;
     private final Gson gson = new Gson();
+    private ChessBoard latestBoard;
+    private String playerColor;
+
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {
@@ -38,9 +44,12 @@ public class WebSocketFacade extends Endpoint {
                             notificationHandler.notify(notifyMsg);
                             break;
                         case LOAD_GAME:
-                            // Handle board redraw or pass to another handler
-//                            System.out.println("Received LOAD_GAME message.");
+                            LoadGameMessage load = gson.fromJson(message, LoadGameMessage.class);
+                            latestBoard = load.getGame().getBoard();  // Save latest board
+                            DrawBoard drawBoard = new DrawBoard(latestBoard, playerColor);
+                            drawBoard.drawBoard();
                             break;
+
                         case ERROR:
                             System.err.println("Received error from server: " + message);
                             break;
@@ -80,6 +89,21 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
+
     // TODO: Add makeMove, leave, resign, etc. commands
+
+
+
+    public ChessBoard getLatestBoard() {
+        return latestBoard;
+    }
+
+    public void setPlayerColor(String color) {
+        this.playerColor = color;
+    }
+
+    public String getPlayerColor() {
+        return playerColor;
+    }
 }
 
