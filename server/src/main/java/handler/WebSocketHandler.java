@@ -74,30 +74,91 @@ public class WebSocketHandler {
         }
     }
 
+//    private void handleLeave(UserGameCommand command, Session session) {
+//        int gameID = command.getGameID();
+//        String authToken = command.getAuthToken();
+//
+//        try {
+//            AuthDAO authDAO = new SQLAuthDAO();
+//            String username = authDAO.getAuth(authToken).username();
+//
+//            // Remove the session from the list
+//            ArrayList<Session> sessions = gameSessions.get(gameID);
+//            sessions.remove(session);
+//
+//            // Notify others
+//            ServerMessage notify = new NotificationMessage(username + " left the game.");
+//            for (Session s : sessions) {
+//                if (s.isOpen()) {
+//                    s.getRemote().sendString(gson.toJson(notify));
+//                }
+//            }
+//
+//        } catch (DataAccessException | IOException e) {
+//            e.printStackTrace(); // optional debug logging
+//        }
+//    }
+
     private void handleLeave(UserGameCommand command, Session session) {
         int gameID = command.getGameID();
         String authToken = command.getAuthToken();
 
         try {
             AuthDAO authDAO = new SQLAuthDAO();
+            GameDAO gameDAO = new SQLGameDAO();
             String username = authDAO.getAuth(authToken).username();
 
-            // Remove the session from the list
+            // Remove session from the game session list
             ArrayList<Session> sessions = gameSessions.get(gameID);
-            sessions.remove(session);
+            if (sessions != null) {
+                sessions.remove(session);
+            }
 
-            // Notify others
+            // Load the game
+            GameData game = gameDAO.getGame(gameID);
+            if (game == null) return;
+
+            // Remove user from white/black slot if they were a player
+            String white = game.whiteUsername();
+            String black = game.blackUsername();
+
+            boolean isPlayer = false;
+            if (username.equals(white)) {
+                white = null;
+                isPlayer = true;
+            } else if (username.equals(black)) {
+                black = null;
+                isPlayer = true;
+            }
+
+            // Create updated GameData with that player's slot set to null
+            if (isPlayer) {
+                GameData updatedGame = new GameData(
+                        game.gameID(),
+                        white,
+                        black,
+                        game.gameName(),
+                        game.game()
+                );
+                gameDAO.updateGame(updatedGame);
+            }
+
+            // Notify the other players
             ServerMessage notify = new NotificationMessage(username + " left the game.");
-            for (Session s : sessions) {
-                if (s.isOpen()) {
-                    s.getRemote().sendString(gson.toJson(notify));
+            if (sessions != null) {
+                for (Session s : sessions) {
+                    if (s.isOpen()) {
+                        s.getRemote().sendString(gson.toJson(notify));
+                    }
                 }
             }
 
         } catch (DataAccessException | IOException e) {
-            e.printStackTrace(); // optional debug logging
+            e.printStackTrace(); // For debugging, or replace with proper logging
         }
     }
+
+
 
     private void handleResign(UserGameCommand command, Session session) {
         int gameID = command.getGameID();
@@ -120,88 +181,6 @@ public class WebSocketHandler {
             e.printStackTrace();
         }
     }
-
-//    private void handleMove(UserGameCommand command, Session session) throws IOException {
-//        int gameID = command.getGameID();
-//        ChessMove move = command.getMove();
-//        String authToken = command.getAuthToken();
-//
-//        try {
-//            AuthDAO authDAO = new SQLAuthDAO();
-//            GameDAO gameDAO = new SQLGameDAO();
-//
-//            // Get the game and user
-//            var auth = authDAO.getAuth(authToken);
-//            var gameData = gameDAO.getGame(gameID);
-//            ChessGame game = gameData.game();
-//
-//            //verify that player can only move player pieces
-//            ChessGame.TeamColor playerColor = getPlayerColor(gameData, auth.username());
-//
-//
-//            System.out.println("🔎 DEBUG: Player = " + auth.username());
-//            System.out.println("🔎 DEBUG: Claimed teamColor = " + playerColor);
-//            System.out.println("🔎 DEBUG: Server's current turn = " + game.getTeamTurn());
-//
-//            ChessPiece piece = game.getBoard().getPiece(move.getStartPosition());
-//            System.out.println("🔎 DEBUG: Piece at start = " + (piece == null ? "null" : piece.getTeamColor()));
-//
-//
-//            if (playerColor != game.getTeamTurn()) {
-//                session.getRemote().sendString(gson.toJson(
-//                        new NotificationMessage("Not your turn.")
-//                ));
-//                return;
-//            }
-//
-//            if (piece == null || piece.getTeamColor() != playerColor) {
-//                session.getRemote().sendString(gson.toJson(
-//                        new NotificationMessage("Invalid move: You can only move your own pieces.")
-//                ));
-//                return;
-//            }
-//
-//
-//
-//            // Make the move
-//            game.makeMove(move);
-//
-//            String moveMessage = playerColor + " moved from " +
-//                    move.getStartPosition().toString() + " to " + move.getEndPosition().toString();
-//
-//            ServerMessage notification = new NotificationMessage(moveMessage);
-//
-//
-//            // Save the updated game
-//            gameDAO.updateGame(new GameData(
-//                    gameData.gameID(),
-//                    gameData.whiteUsername(),
-//                    gameData.blackUsername(),
-//                    gameData.gameName(),
-//                    game
-//            ));
-//
-//
-//            // Send updated board to all clients in the game
-//            ServerMessage msg = new LoadGameMessage(game);
-//            for (Session s : gameSessions.get(gameID)) {
-//                if (s.isOpen()) s.getRemote().sendString(gson.toJson(msg));
-//            }
-//
-//            // Send move notification to all clients
-//            for (Session s : gameSessions.get(gameID)) {
-//                if (s.isOpen()) {
-//                    s.getRemote().sendString(gson.toJson(notification));
-//                }
-//            }
-//
-//
-//        } catch (InvalidMoveException e) {
-//            session.getRemote().sendString(gson.toJson(new NotificationMessage("Invalid move: " + e.getMessage())));
-//        } catch (Exception e) {
-//            session.getRemote().sendString(gson.toJson(new NotificationMessage("Server error: " + e.getMessage())));
-//        }
-//    }
 
 
     private void handleMove(UserGameCommand command, Session session) throws IOException {
