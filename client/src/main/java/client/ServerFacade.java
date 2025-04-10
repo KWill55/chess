@@ -62,9 +62,17 @@ public class ServerFacade {
     }
 
     //observe game
-    public void observeGame(String authToken, int gameID) throws ResponseException {
+//    public JoinGameResponse observeGame(String authToken, int gameID) throws ResponseException {
+//        var request = new JoinGameRequest(null, gameID);  // null color means observer
+//        return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
+//    }
+
+    public JoinGameResponse observeGame(String authToken, int gameID) throws ResponseException {
         var request = new JoinGameRequest(null, gameID);
+        return makeRequest("PUT", "/game", request, JoinGameResponse.class, authToken);
     }
+
+
 
     // ---------- Clear Method ----------
 

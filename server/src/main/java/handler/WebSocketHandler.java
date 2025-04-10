@@ -258,7 +258,8 @@ public class WebSocketHandler {
                     new NotificationMessage("Move made successfully")
             ));
 
-            String moveMessage = playerColor + " moved from " + move.getStartPosition() + " to " + move.getEndPosition();
+            String moveMessage = auth.username() + " (" + playerColor + ") moved from " +
+                    move.getStartPosition() + " to " + move.getEndPosition();
             ServerMessage notification = new NotificationMessage(moveMessage);
 
             gameDAO.updateGame(new GameData(

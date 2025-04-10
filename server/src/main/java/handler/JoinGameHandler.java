@@ -66,29 +66,38 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
             return gson.toJson(Map.of("message", "Error: Unauthorized"));
         }
 
-        // Validate request data
-        if (request.gameID() <= 0 || request.playerColor() == null ||
-                !(request.playerColor().equalsIgnoreCase("WHITE") || request.playerColor().equalsIgnoreCase("BLACK"))) {
-            res.status(400); // Bad request: Invalid game ID or player color
-            return gson.toJson(Map.of("message", "Error: bad request"));
+        if (request.gameID() <= 0) {
+            res.status(400);
+            return gson.toJson(Map.of("message", "Error: invalid game ID"));
         }
+
 
         try {
             // Retrieve the game from the database
             GameData game = gameService.getGame(request.gameID());
             if (game == null) {
-                res.status(400); // Bad request: Game does not exist
-                return gson.toJson(Map.of("message", "Error: bad request"));
+                res.status(400);
+                return gson.toJson(Map.of("message", "Error: game not found"));
             }
 
-            // Check if the requested player slot is already occupied
+            // Handle observer
+            if (request.playerColor() == null) {
+                res.status(200);
+                return gson.toJson(new JoinGameResponse());
+            }
+
+            // Continue with player join logic
+            if (!(request.playerColor().equalsIgnoreCase("WHITE") || request.playerColor().equalsIgnoreCase("BLACK"))) {
+                res.status(400);
+                return gson.toJson(Map.of("message", "Error: invalid player color"));
+            }
+
             if ((request.playerColor().equalsIgnoreCase("WHITE") && game.whiteUsername() != null) ||
                     (request.playerColor().equalsIgnoreCase("BLACK") && game.blackUsername() != null)) {
-                res.status(403); // Forbidden: The chosen color slot is already taken
+                res.status(403);
                 return gson.toJson(Map.of("message", "Error: already taken"));
             }
 
-            // Update the game with the new player assigned to the selected color slot
             GameData updatedGame = new GameData(
                     game.gameID(),
                     request.playerColor().equalsIgnoreCase("WHITE") ? username : game.whiteUsername(),
@@ -97,15 +106,13 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
                     game.game()
             );
 
-            // Save the updated game in the database
             gameService.updateGame(request.gameID(), updatedGame);
 
-            // Return success response with an empty JSON object
             res.status(200);
-            return gson.toJson(Map.of());
+            return gson.toJson(new JoinGameResponse());
 
         } catch (DataAccessException e) {
-            res.status(500); // Internal Server Error: Database failure or unexpected issue
+            res.status(500);
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }

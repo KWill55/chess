@@ -284,15 +284,39 @@ public class ChessClient {
         assertSignedIn();
 
         if (params.length != 1) {
-            throw new ResponseException(400, "observeGame format: observe <game ID>");
+            throw new ResponseException(400, "observeGame format: observe <game number>");
         }
-        ChessGame newGame = new ChessGame();
-        ChessBoard board = newGame.getBoard();
-        webSocket.setPlayerColor("WHITE");
-        DrawBoard whiteBoard = new DrawBoard(board, "WHITE");
-        whiteBoard.drawBoard();
 
-        return "success";
+        try {
+            int gameNumber = Integer.parseInt(params[0]);
+
+            var response = server.listGames(authToken);
+            var games = response.games();
+
+            if (gameNumber < 1 || gameNumber > games.size()) {
+                throw new ResponseException(404, "Game number " + gameNumber + " does not exist.");
+            }
+
+            GameData selectedGame = games.get(gameNumber - 1);
+            int gameID = selectedGame.gameID();
+
+            // Join the game as an observer (null color = observer)
+            server.observeGame(authToken, gameID);
+
+            // Open WebSocket connection
+            this.webSocket = new WebSocketFacade("http://localhost:" + serverPort, notificationHandler);
+            webSocket.setPlayerColor("OBSERVER");
+            webSocket.connectToGame(authToken, gameID);
+
+            // Start observer game loop
+            GameRepl observerRepl = new GameRepl(this, selectedGame, "OBSERVER");
+            observerRepl.run();
+
+            return "Exited Observer Mode for Game " + gameNumber + ".";
+
+        } catch (NumberFormatException e) {
+            throw new ResponseException(400, params[0] + " is not a valid game number.");
+        }
     }
 
     public String help() {
