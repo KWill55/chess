@@ -214,7 +214,6 @@ public class WebSocketHandler {
                 return;
             }
 
-            // Get player's color
             ChessGame.TeamColor playerColor = null;
             if (auth.username().equals(gameData.whiteUsername())) {
                 playerColor = ChessGame.TeamColor.WHITE;
@@ -226,14 +225,12 @@ public class WebSocketHandler {
                 return;
             }
 
-            // Check turn
             if (playerColor != game.getTeamTurn()) {
                 session.getRemote().sendString(gson.toJson(
                         new ErrorMessage("Not your turn.")));
                 return;
             }
 
-            // Check piece ownership
             ChessPiece piece = game.getBoard().getPiece(move.getStartPosition());
             if (piece == null || piece.getTeamColor() != playerColor) {
                 session.getRemote().sendString(gson.toJson(
@@ -241,7 +238,6 @@ public class WebSocketHandler {
                 return;
             }
 
-            // Make move
             game.makeMove(move);
             gameDAO.updateGame(new GameData(
                     gameData.gameID(),
@@ -249,10 +245,8 @@ public class WebSocketHandler {
                     gameData.blackUsername(),
                     gameData.gameName(),
                     game,
-                    false
-            ));
+                    false ));
 
-            // Broadcast LoadGameMessage
             ServerMessage boardUpdate = new LoadGameMessage(game);
             for (Session s : gameSessions.get(gameID)) {
                 if (s.isOpen()) {
@@ -260,7 +254,6 @@ public class WebSocketHandler {
                 }
             }
 
-            // Send Notification (not to current player)
             String moveMessage = auth.username() + " (" + playerColor + ") moved from " +
                     move.getStartPosition() + " to " + move.getEndPosition();
             ServerMessage notification = new NotificationMessage(moveMessage);
@@ -270,10 +263,8 @@ public class WebSocketHandler {
                 }
             }
 
-            // ♟ Check for check/stalemate/checkmate
             ChessGame.TeamColor opponent = (playerColor == ChessGame.TeamColor.WHITE)
-                    ? ChessGame.TeamColor.BLACK
-                    : ChessGame.TeamColor.WHITE;
+                    ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
 
             if (game.isInCheckmate(opponent)) {
                 broadcast(gameID, new NotificationMessage("Checkmate! " + opponent + " has lost."));
@@ -283,8 +274,7 @@ public class WebSocketHandler {
                         gameData.blackUsername(),
                         gameData.gameName(),
                         game,
-                        true
-                ));
+                        true ));
             } else if (game.isInStalemate(opponent)) {
                 broadcast(gameID, new NotificationMessage("Stalemate! " + opponent + " has no legal moves."));
             } else if (game.isInCheck(opponent)) {

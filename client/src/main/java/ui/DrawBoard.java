@@ -41,20 +41,15 @@ public class DrawBoard {
     }
 
     public void drawBoard() {
-
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
         // Determine column order based on perspective.
-        // White view: columns a-h (left to right)
-        // Black view: columns h-a (left to right)
         char startCol = (playerColor.equals("WHITE")) ? 'a' : (char)('a' + BOARD_SIZE - 1);
         char endCol   = (playerColor.equals("WHITE")) ? (char)('a' + BOARD_SIZE - 1) : 'a';
         int colStep   = (playerColor.equals("WHITE")) ? 1 : -1;
 
         // Determine row order.
-        // White POV: rows from 1 (bottom) to 8 (top)
-        // Black POV: rows from 8 (bottom) to 1 (top)
         int startRow, endRow, rowStep;
         if (playerColor.equals("BLACK")) {
             startRow = BOARD_SIZE - 1;  // bottom of board in array corresponds to row 1
@@ -78,8 +73,6 @@ public class DrawBoard {
         for (int row = startRow; (rowStep > 0 ? row <= endRow : row >= endRow); row += rowStep) {
 
             // Calculate the row label
-//            int rowLabel = row + 1;
-//            int rowLabel = (playerColor.equals("WHITE")) ? 8 - row : row + 1;
             int rowLabel = 8 - row;
             out.printf(" %d ", rowLabel);
 
@@ -98,7 +91,6 @@ public class DrawBoard {
                     // For white and observe,
                     currentPos = new ChessPosition(8 - row, col + 1);
                 }
-
 
                 // Set background color for the square.
                 String squareBgColor;
