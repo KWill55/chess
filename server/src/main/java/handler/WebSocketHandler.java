@@ -258,6 +258,23 @@ public class WebSocketHandler {
                     new NotificationMessage("Move made successfully")
             ));
 
+            ChessGame.TeamColor opponent = (playerColor == ChessGame.TeamColor.WHITE)
+                    ? ChessGame.TeamColor.BLACK
+                    : ChessGame.TeamColor.WHITE;
+
+// Checkmate?
+            if (game.isInCheckmate(opponent)) {
+                String msg = "Checkmate! " + opponent + " has lost.";
+                broadcast(gameID, new NotificationMessage(msg));
+            } else if (game.isInStalemate(opponent)) {
+                String msg = "Stalemate! " + opponent + " has no legal moves.";
+                broadcast(gameID, new NotificationMessage(msg));
+            } else if (game.isInCheck(opponent)) {
+                String msg = opponent + " is in check.";
+                broadcast(gameID, new NotificationMessage(msg));
+            }
+
+
             String moveMessage = auth.username() + " (" + playerColor + ") moved from " +
                     move.getStartPosition() + " to " + move.getEndPosition();
             ServerMessage notification = new NotificationMessage(moveMessage);
@@ -298,6 +315,15 @@ public class WebSocketHandler {
                     new NotificationMessage("Server error: " + e.getMessage())
             ));
             e.printStackTrace();
+        }
+    }
+
+    //helper function
+    private void broadcast(int gameID, ServerMessage message) throws IOException {
+        for (Session s : gameSessions.get(gameID)) {
+            if (s.isOpen()) {
+                s.getRemote().sendString(gson.toJson(message));
+            }
         }
     }
 }
