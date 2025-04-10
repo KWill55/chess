@@ -9,6 +9,7 @@ import ui.DrawBoard;
 import websocket.commands.UserGameCommand;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 public class ChessClient {
     private final ServerFacade server;
@@ -155,6 +156,44 @@ public class ChessClient {
         DrawBoard drawBoard = new DrawBoard(board, color);
         drawBoard.drawBoard();
     }
+
+    public void highlightValidMoves(String from) {
+        // e.g. "e2"
+        ChessPosition fromPos = parsePosition(from);
+
+        // Retrieve the current board state and player color from the WebSocket
+        ChessBoard board = webSocket.getLatestBoard();
+        if (board == null) {
+            System.out.println("No board available.");
+            return;
+        }
+        String playerColor = webSocket.getPlayerColor();
+
+        // Create a temporary game instance to use the validMoves logic
+        ChessGame tempGame = new ChessGame();
+        tempGame.setBoard(board);
+
+        // Set the team turn based on the player's color
+        if (playerColor.equalsIgnoreCase("WHITE")) {
+            tempGame.setTeamTurn(ChessGame.TeamColor.WHITE);
+        } else {
+            tempGame.setTeamTurn(ChessGame.TeamColor.BLACK);
+        }
+
+        // Get the collection of valid moves for the selected piece
+        Collection<ChessMove> validMoves = tempGame.validMoves(fromPos);
+
+        // Print feedback if no valid moves are available
+        if (validMoves.isEmpty()) {
+            System.out.println("No valid moves available for square " + from + ".");
+        }
+
+        DrawBoard drawBoard = new DrawBoard(board, playerColor);
+        drawBoard.setValidMoves(validMoves, fromPos);
+
+        drawBoard.drawBoard();
+    }
+
 
 
 

@@ -3,6 +3,9 @@ package ui;
 import chess.*;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import static ui.EscapeSequences.*;
 
 public class DrawBoard {
@@ -12,10 +15,29 @@ public class DrawBoard {
 
     private ChessBoard board;
     private String playerColor;
+    private ChessPosition selectedSquare = null;
+    private Collection<ChessPosition> validMovePositions = null;
 
     public DrawBoard(ChessBoard board, String playerColor) {
         this.board = board;
         this.playerColor = playerColor;
+    }
+
+    public void setValidMoves(Collection<ChessMove> moves, ChessPosition selected) {
+        if (playerColor.equals("BLACK")) {
+            // Convert the selected square to display coordinates for black
+            this.selectedSquare = new ChessPosition(selected.getRow(), 9 - selected.getColumn());
+            // Convert each valid move from standard to black display coordinates.
+            this.validMovePositions = moves.stream()
+                    .map(ChessMove::getEndPosition)
+                    .map(pos -> new ChessPosition(pos.getRow(), 9 - pos.getColumn()))
+                    .collect(Collectors.toList());
+        } else {
+            this.selectedSquare = selected;
+            this.validMovePositions = moves.stream()
+                    .map(ChessMove::getEndPosition)
+                    .collect(Collectors.toList());
+        }
     }
 
     public void drawBoard() {
@@ -67,12 +89,31 @@ public class DrawBoard {
                 ChessPiece piece = board.squares[row][col];
                 String display;
 
-                // Set background color for the square.
-                if ((row + col) % 2 == 0) {
-                    out.print(SET_BG_COLOR_DARK_GREY);
+                ChessPosition currentPos;
+                if (playerColor.equals("WHITE")) {
+                    // For white, row label is 8 - row and column is col+1 (since parsePosition uses 1-indexed).
+                    currentPos = new ChessPosition(8 - row, col + 1);
                 } else {
-                    out.print(SET_BG_COLOR_LIGHT_GREY);
+                    // For black, the column ordering is reversed.
+                    currentPos = new ChessPosition(8 - row, BOARD_SIZE - col);
                 }
+
+
+                // Set background color for the square.
+                String squareBgColor;
+                // Highlight the selected square in green.
+                if (currentPos.equals(selectedSquare)) {
+                    squareBgColor = SET_BG_COLOR_GREEN;
+                }
+                // Highlight valid move destination squares in yellow.
+                else if (validMovePositions != null && validMovePositions.contains(currentPos)) {
+                    squareBgColor = SET_BG_COLOR_YELLOW;
+                }
+                // Otherwise, use the standard chessboard square colors.
+                else {
+                    squareBgColor = ((row + col) % 2 == 0) ? SET_BG_COLOR_DARK_GREY : SET_BG_COLOR_LIGHT_GREY;
+                }
+                out.print(squareBgColor);
 
                 if (piece == null) {
                     display = "     "; // Empty square

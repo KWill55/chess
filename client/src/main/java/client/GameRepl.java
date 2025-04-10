@@ -40,6 +40,14 @@ public class GameRepl {
                     client.makeMove(game.gameID(), from, to);
                 }
                 case "redraw" -> client.redrawBoard();
+                case "highlight" -> {
+                    if (tokens.length != 2) {
+                        System.out.println("Usage: highlight <pos>");
+                        continue;
+                    }
+                    String from = tokens[1];
+                    client.highlightValidMoves(from);
+                }
                 case "resign" -> {
                     client.resignGame(game.gameID());
                     System.out.println("\u2620 You resigned the game.");
@@ -62,6 +70,7 @@ public class GameRepl {
         System.out.println("- resign (forfeit the game)");
         System.out.println("- leave (exit to lobby)");
         System.out.println("- redraw (reprint the board)");
+        System.out.println("- highlight <pos> (highlight valid moves for piece)");
         System.out.println("- help (show this help)");
     }
 }
