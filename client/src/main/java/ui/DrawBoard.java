@@ -34,7 +34,7 @@ public class DrawBoard {
         // White POV: rows from 1 (bottom) to 8 (top)
         // Black POV: rows from 8 (bottom) to 1 (top)
         int startRow, endRow, rowStep;
-        if (playerColor.equals("WHITE")) {
+        if (playerColor.equals("BLACK")) {
             startRow = BOARD_SIZE - 1;  // bottom of board in array corresponds to row 1
             endRow   = 0;               // top of board corresponds to row 8
             rowStep  = -1;
@@ -50,16 +50,20 @@ public class DrawBoard {
             out.printf("  %c  ", c);
         }
         out.println();
+        out.print("\n");
 
         // Draw each row.
         for (int row = startRow; (rowStep > 0 ? row <= endRow : row >= endRow); row += rowStep) {
 
-            // Calculate the row label.
-            int rowLabel = row + 1;
+            // Calculate the row label
+//            int rowLabel = row + 1;
+//            int rowLabel = (playerColor.equals("WHITE")) ? 8 - row : row + 1;
+            int rowLabel = 8 - row;
             out.printf(" %d ", rowLabel);
 
             // Draw each square in the row.
             for (int col = (colStep > 0 ? 0 : BOARD_SIZE - 1); (colStep > 0 ? col < BOARD_SIZE : col >= 0); col += colStep) {
+
                 ChessPiece piece = board.squares[row][col];
                 String display;
 
@@ -76,9 +80,9 @@ public class DrawBoard {
                 } else {
                     // Set text color based on the team.
                     if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        out.print(SET_TEXT_COLOR_BLACK);
-                    } else {
                         out.print(SET_TEXT_COLOR_WHITE);
+                    } else {
+                        out.print(SET_TEXT_COLOR_BLACK);
                     }
                     // For knights, use "N" as abbreviation.
                     if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {

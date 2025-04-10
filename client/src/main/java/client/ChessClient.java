@@ -126,9 +126,10 @@ public class ChessClient {
 
     public void makeMove(int gameID, String from, String to) {
         try {
-            ChessPosition fromPos = parsePosition(from);
+            ChessPosition fromPos = parsePosition(from); // Convert from letter format to numbers
             ChessPosition toPos = parsePosition(to);
-            ChessMove move = new ChessMove(fromPos, toPos, null); // handle promotion later
+            ChessMove move = new ChessMove(fromPos, toPos, null);
+            System.out.println("Client created move: " + move);
 
             UserGameCommand command = new UserGameCommand(
                     UserGameCommand.CommandType.MAKE_MOVE,
@@ -136,13 +137,11 @@ public class ChessClient {
                     gameID,
                     move
             );
-
             webSocket.send(command);
         } catch (Exception e) {
             System.out.println("Invalid move: " + e.getMessage());
         }
     }
-
 
 
     public void redrawBoard() {
@@ -296,11 +295,16 @@ public class ChessClient {
         SIGNEDIN
     }
 
+    // letter format to just numbers
     private ChessPosition parsePosition(String pos) {
-        int col = pos.charAt(0) - 'a';                // 'a' = 0
-        int row = 8 - (pos.charAt(1) - '0');          // '1' = 7, ..., '8' = 0
-
-        return new ChessPosition(row + 1, col + 1);   // shift to 1-based indexing
+        int col = pos.charAt(0) - 'a' + 1; // 'a' = 1, 'b' = 2, ...
+        int row = pos.charAt(1) - '0'; // '1' = 1, '2' = 2, ...
+        ChessPosition cp = new ChessPosition(row, col);
+        System.out.println("Converted '" + pos + "' to ChessPosition: " + cp);
+        return cp;
     }
+
+
+
 }
 
