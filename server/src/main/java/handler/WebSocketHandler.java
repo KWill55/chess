@@ -52,19 +52,29 @@ public class WebSocketHandler {
             AuthDAO authDAO = new SQLAuthDAO();
             String username = authDAO.getAuth(authToken).username();
 
+            // Determine player color (or observer)
+            String playerColor;
+            if (username.equals(gameData.whiteUsername())) {
+                playerColor = "WHITE";
+            } else if (username.equals(gameData.blackUsername())) {
+                playerColor = "BLACK";
+            } else {
+                playerColor = "OBSERVER";
+            }
+
+            // Send game state to the joining client
             ServerMessage loadGame = new LoadGameMessage(gameData.game());
             session.getRemote().sendString(gson.toJson(loadGame));
 
-            String notificationText = gameData.gameName() + " - " + username + " joined the game";
+            // Notify all other clients in this game
+            String notificationText = gameData.gameName() + " - " + username + " joined the game as " + playerColor;
             ServerMessage notify = new NotificationMessage(notificationText);
 
             System.out.println("Notification to send: " + notificationText);
 
             for (Session s : gameSessions.get(gameID)) {
-//                System.out.println("Attempting to send to session: " + s);
                 if (s.isOpen() && !s.equals(session)) {
                     s.getRemote().sendString(gson.toJson(notify));
-//                    System.out.println("Sent to other client!");
                 }
             }
 
@@ -74,30 +84,6 @@ public class WebSocketHandler {
         }
     }
 
-//    private void handleLeave(UserGameCommand command, Session session) {
-//        int gameID = command.getGameID();
-//        String authToken = command.getAuthToken();
-//
-//        try {
-//            AuthDAO authDAO = new SQLAuthDAO();
-//            String username = authDAO.getAuth(authToken).username();
-//
-//            // Remove the session from the list
-//            ArrayList<Session> sessions = gameSessions.get(gameID);
-//            sessions.remove(session);
-//
-//            // Notify others
-//            ServerMessage notify = new NotificationMessage(username + " left the game.");
-//            for (Session s : sessions) {
-//                if (s.isOpen()) {
-//                    s.getRemote().sendString(gson.toJson(notify));
-//                }
-//            }
-//
-//        } catch (DataAccessException | IOException e) {
-//            e.printStackTrace(); // optional debug logging
-//        }
-//    }
 
     private void handleLeave(UserGameCommand command, Session session) {
         int gameID = command.getGameID();
