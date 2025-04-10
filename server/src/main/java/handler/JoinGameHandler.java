@@ -103,7 +103,8 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
                     request.playerColor().equalsIgnoreCase("WHITE") ? username : game.whiteUsername(),
                     request.playerColor().equalsIgnoreCase("BLACK") ? username : game.blackUsername(),
                     game.gameName(),
-                    game.game()
+                    game.game(),
+                    game.gameOver()
             );
 
             gameService.updateGame(request.gameID(), updatedGame);

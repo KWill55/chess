@@ -40,7 +40,7 @@ public class GameService {
      */
     public int createGame(String gameName) throws DataAccessException {
         ChessGame newGame = new ChessGame(); // Create a new ChessGame instance
-        GameData gameData = new GameData(0, null, null, gameName, newGame); // Default values for game
+        GameData gameData = new GameData(0, null, null, gameName, newGame, false); // Default values for game
         int gameID = gameDAO.createGame(gameData); // Store in database
         System.out.println("GameService: gameName = " + gameName);
         return gameID; // Return the assigned game ID

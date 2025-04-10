@@ -51,7 +51,6 @@ public class GameRepl {
                 case "resign" -> {
                     client.resignGame(game.gameID());
                     System.out.println("\u2620 You resigned the game.");
-                    return;
                 }
                 case "leave" -> {
                     client.leaveGame(game.gameID());

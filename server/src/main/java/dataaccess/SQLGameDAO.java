@@ -1,8 +1,8 @@
 package dataaccess;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
-import chess.ChessGame;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,21 +11,13 @@ import java.util.List;
 public class SQLGameDAO implements GameDAO {
     private static final Gson GSON = new Gson();
 
-
-    /**
-     * Creates a new game in the database and returns its game ID.
-     *
-     * @param game The GameData object containing game details.
-     * @return The generated game ID.
-     * @throws DataAccessException If the database operation fails.
-     */
     @Override
     public int createGame(GameData game) throws DataAccessException {
         if (game == null || game.gameName() == null) {
             throw new DataAccessException("Error: Invalid game data");
         }
 
-        String sql = "INSERT INTO Games (gameName, whiteUsername, blackUsername, gameState) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Games (gameName, whiteUsername, blackUsername, gameState, gameOver) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -33,10 +25,8 @@ public class SQLGameDAO implements GameDAO {
             stmt.setString(1, game.gameName());
             stmt.setString(2, game.whiteUsername());
             stmt.setString(3, game.blackUsername());
-
-            // Convert ChessGame object to JSON string for storage
-            String gameJson = GSON.toJson(game.game());
-            stmt.setString(4, gameJson);
+            stmt.setString(4, GSON.toJson(game.game()));
+            stmt.setBoolean(5, game.gameOver());
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -55,13 +45,6 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-    /**
-     * Retrieves a game by its game ID.
-     *
-     * @param gameID The unique identifier of the game.
-     * @return The GameData object representing the game.
-     * @throws DataAccessException If the game retrieval fails.
-     */
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         String sql = "SELECT * FROM Games WHERE gameID = ?";
@@ -73,15 +56,14 @@ public class SQLGameDAO implements GameDAO {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                // Convert JSON string back to ChessGame object
                 ChessGame chessGame = GSON.fromJson(rs.getString("gameState"), ChessGame.class);
-
                 return new GameData(
                         rs.getInt("gameID"),
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
-                        chessGame
+                        chessGame,
+                        rs.getBoolean("gameOver")
                 );
             } else {
                 throw new DataAccessException("Error: Game not found.");
@@ -92,15 +74,9 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-    /**
-     * Updates an existing game's data.
-     *
-     * @param game The updated GameData object containing the new game details.
-     * @throws DataAccessException If the update fails.
-     */
     @Override
     public void updateGame(GameData game) throws DataAccessException {
-        String sql = "UPDATE Games SET gameName = ?, whiteUsername = ?, blackUsername = ?, gameState = ? WHERE gameID = ?";
+        String sql = "UPDATE Games SET gameName = ?, whiteUsername = ?, blackUsername = ?, gameState = ?, gameOver = ? WHERE gameID = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -108,11 +84,9 @@ public class SQLGameDAO implements GameDAO {
             stmt.setString(1, game.gameName());
             stmt.setString(2, game.whiteUsername());
             stmt.setString(3, game.blackUsername());
-
-            // Convert ChessGame object to JSON for storage
-            String gameJson = GSON.toJson(game.game());
-            stmt.setString(4, gameJson);
-            stmt.setInt(5, game.gameID());
+            stmt.setString(4, GSON.toJson(game.game()));
+            stmt.setBoolean(5, game.gameOver());
+            stmt.setInt(6, game.gameID());
 
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
@@ -124,12 +98,6 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-    /**
-     * Retrieves all games from the database.
-     *
-     * @return A list of all games.
-     * @throws DataAccessException If the database operation fails.
-     */
     @Override
     public List<GameData> listGames() throws DataAccessException {
         List<GameData> games = new ArrayList<>();
@@ -140,15 +108,14 @@ public class SQLGameDAO implements GameDAO {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                // Convert JSON to ChessGame
                 ChessGame chessGame = GSON.fromJson(rs.getString("gameState"), ChessGame.class);
-
                 games.add(new GameData(
                         rs.getInt("gameID"),
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
-                        chessGame
+                        chessGame,
+                        rs.getBoolean("gameOver")
                 ));
             }
 
@@ -158,9 +125,6 @@ public class SQLGameDAO implements GameDAO {
         return games;
     }
 
-    /**
-     * Clears all games from the database.
-     */
     @Override
     public void clear() throws DataAccessException {
         String sql = "DELETE FROM Games";
