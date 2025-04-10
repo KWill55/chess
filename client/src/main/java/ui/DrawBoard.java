@@ -90,13 +90,6 @@ public class DrawBoard {
                 String display;
 
                 ChessPosition currentPos;
-//                if (playerColor.equals("WHITE")) {
-//                    // For white, row label is 8 - row and column is col+1 (since parsePosition uses 1-indexed).
-//                    currentPos = new ChessPosition(8 - row, col + 1);
-//                } else {
-//                    // For black, the column ordering is reversed.
-//                    currentPos = new ChessPosition(8 - row, BOARD_SIZE - col);
-//                }
 
                 if (playerColor.equals("BLACK")) {
                     // For black,

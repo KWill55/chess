@@ -132,7 +132,7 @@ public class SQLGameDAO implements GameDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             int rowsDeleted = stmt.executeUpdate();
-            System.out.println("DEBUG: Games table cleared. Rows deleted: " + rowsDeleted);
+//            System.out.println("DEBUG: Games table cleared. Rows deleted: " + rowsDeleted);
         } catch (SQLException e) {
             throw new DataAccessException("Error clearing games: " + e.getMessage());
         }

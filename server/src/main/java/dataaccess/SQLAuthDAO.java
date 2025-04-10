@@ -33,7 +33,7 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new DataAccessException("Error: authToken was not inserted");
             }
 
-            System.out.println("DEBUG: Inserted authToken: " + token + " for user: " + auth.username());
+//            System.out.println("DEBUG: Inserted authToken: " + token + " for user: " + auth.username());
         } catch (SQLException e) {
             if (e.getMessage().toLowerCase().contains("foreign key") ||
                     e.getMessage().toLowerCase().contains("constraint fails")) {
@@ -55,10 +55,10 @@ public class SQLAuthDAO implements AuthDAO {
 
             if (rs.next()) {
                 String username = rs.getString("username");
-                System.out.println("DEBUG: Retrieved auth for " + username);
+//                System.out.println("DEBUG: Retrieved auth for " + username);
                 return new AuthData(authToken, username);
             } else {
-                System.out.println("DEBUG: authToken not found: " + authToken);
+//                System.out.println("DEBUG: authToken not found: " + authToken);
                 throw new DataAccessException("Error: authToken not found");
             }
         } catch (SQLException e) {
@@ -79,7 +79,7 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new DataAccessException("Error: authToken not found for deletion");
             }
 
-            System.out.println("DEBUG: Deleted authToken: " + authToken);
+//            System.out.println("DEBUG: Deleted authToken: " + authToken);
 
         } catch (SQLException e) {
             throw new DataAccessException("Error deleting authToken: " + e.getMessage());
@@ -93,7 +93,7 @@ public class SQLAuthDAO implements AuthDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             int rowsDeleted = stmt.executeUpdate();
-            System.out.println("DEBUG: Auth table cleared. Rows deleted: " + rowsDeleted);
+//            System.out.println("DEBUG: Auth table cleared. Rows deleted: " + rowsDeleted);
         } catch (SQLException e) {
             throw new DataAccessException("Error clearing authTokens: " + e.getMessage());
         }

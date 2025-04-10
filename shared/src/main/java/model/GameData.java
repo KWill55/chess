@@ -18,4 +18,9 @@ public record GameData(
         String gameName,
         ChessGame game,
         boolean gameOver
-) {}
+) {
+    // Add this helper constructor for compatibility with test code
+    public GameData(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game) {
+        this(gameID, whiteUsername, blackUsername, gameName, game, false);
+    }
+}

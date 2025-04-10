@@ -96,7 +96,7 @@ public class SQLUserDAO implements UserDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             int rowsDeleted = stmt.executeUpdate();
-            System.out.println("DEBUG: Users table cleared. Rows deleted: " + rowsDeleted);
+//            System.out.println("DEBUG: Users table cleared. Rows deleted: " + rowsDeleted);
         } catch (SQLException e) {
             throw new DataAccessException("Error clearing users: " + e.getMessage());
         }

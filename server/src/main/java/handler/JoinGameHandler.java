@@ -1,11 +1,15 @@
 package handler;
 
 import dataaccess.DataAccessException;
+import dataaccess.GameDAO;
+import dataaccess.SQLGameDAO;
 import model.*;
 import service.AuthService;
 import service.GameService;
 import spark.Request;
 import spark.Response;
+import websocket.messages.ErrorMessage;
+
 import java.util.Map;
 
 /**
@@ -38,39 +42,43 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
         return gson.fromJson(req.body(), JoinGameRequest.class);
     }
 
-    /**
-     * Handles the request to join a game.
-     * Validates authentication, checks game existence, verifies player slot availability, and updates the game.
-     *
-     * @param request The parsed JoinGameRequest object.
-     * @param req The Spark Request object.
-     * @param res The Spark Response object.
-     * @return A JSON response indicating success or failure.
-     */
+
     @Override
     protected Object handleRequest(JoinGameRequest request, Request req, Response res) {
-        String authToken = getAuthToken(req); // Extract the authentication token from the request
+        String authToken = getAuthToken(req); // Extract the authentication token
 
-        // Authenticate the user
+        // Authenticate user
         String username;
         try {
             username = authService.getUserFromAuth(authToken);
         } catch (DataAccessException e) {
-            res.status(401); // Unauthorized: Invalid authentication token
+            res.status(401);
             return gson.toJson(Map.of("message", "Error: Unauthorized"));
         }
-
-        // Ensure the username is valid
         if (username == null) {
-            res.status(401); // Unauthorized: Auth token doesn't correspond to a user
+            res.status(401);
             return gson.toJson(Map.of("message", "Error: Unauthorized"));
         }
-
         if (request.gameID() <= 0) {
             res.status(400);
             return gson.toJson(Map.of("message", "Error: invalid game ID"));
         }
 
+        // Normalize and validate the color
+        String color = request.playerColor();
+        if (color != null) {
+            color = color.trim().toUpperCase();
+        }
+        if (color != null && !color.equals("WHITE") && !color.equals("BLACK")) {
+            res.status(400);
+            return gson.toJson(Map.of("message", "Error: invalid player color"));
+        }
+
+        // If no color was provided, treat it as invalid (instead of observer)
+        if (color == null) {
+            res.status(400);
+            return gson.toJson(Map.of("message", "Error: invalid player color"));
+        }
 
         try {
             // Retrieve the game from the database
@@ -80,28 +88,17 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
                 return gson.toJson(Map.of("message", "Error: game not found"));
             }
 
-            // Handle observer
-            if (request.playerColor() == null) {
-                res.status(200);
-                return gson.toJson(new JoinGameResponse());
-            }
-
-            // Continue with player join logic
-            if (!(request.playerColor().equalsIgnoreCase("WHITE") || request.playerColor().equalsIgnoreCase("BLACK"))) {
-                res.status(400);
-                return gson.toJson(Map.of("message", "Error: invalid player color"));
-            }
-
-            if ((request.playerColor().equalsIgnoreCase("WHITE") && game.whiteUsername() != null) ||
-                    (request.playerColor().equalsIgnoreCase("BLACK") && game.blackUsername() != null)) {
+            // If the desired color slot is already taken, return 403
+            if ((color.equals("WHITE") && game.whiteUsername() != null) ||
+                    (color.equals("BLACK") && game.blackUsername() != null)) {
                 res.status(403);
                 return gson.toJson(Map.of("message", "Error: already taken"));
             }
 
             GameData updatedGame = new GameData(
                     game.gameID(),
-                    request.playerColor().equalsIgnoreCase("WHITE") ? username : game.whiteUsername(),
-                    request.playerColor().equalsIgnoreCase("BLACK") ? username : game.blackUsername(),
+                    color.equals("WHITE") ? username : game.whiteUsername(),
+                    color.equals("BLACK") ? username : game.blackUsername(),
                     game.gameName(),
                     game.game(),
                     game.gameOver()
@@ -117,4 +114,9 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
+
+
+
+
+
 }
