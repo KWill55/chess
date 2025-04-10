@@ -47,36 +47,6 @@ public class ChessPosition {
         return Objects.hash(row, col);
     }
 
-//    @Override
-//    public String toString() {
-//        return "Pos{" +
-//                "row=" + row +
-//                ", col=" + col +
-//                '}';
-//    }
-
-//    @Override
-//    public String toString() {
-//        char colChar = (char) ('a' + col);  // 0 → 'a', 1 → 'b', ...
-//        int rowNum = row + 1;               // 0 → 1, 1 → 2, ...
-//        return "" + colChar + rowNum;       // e.g., "e2"
-//    }
-
-//    @Override
-//    public String toString() {
-//        // Internal array coordinates (0-indexed)
-//        String arrayFormat = "(" + row + ", " + col + ")";
-//
-//        // Chess notation: assume that column 0 maps to 'a'
-//        // and that row 0 represents the bottom row.
-//        // (If your internal board uses 0 for bottom, then chess rank = row + 1)
-//        char fileChar = (char) ('a' + col);
-//        int rank = row + 1;
-//        String chessFormat = "" + fileChar + rank;
-//
-//        return "ChessPosition{" + "array=" + arrayFormat + ", chess=" + chessFormat + "}";
-//    }
-
     @Override
     public String toString() {
         // Subtract 1 to convert 1-indexed column to 0-indexed for mapping to a letter.

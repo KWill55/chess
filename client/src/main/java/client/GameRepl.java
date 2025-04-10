@@ -27,7 +27,9 @@ public class GameRepl {
             String input = scanner.nextLine().trim();
             String[] tokens = input.split("\\s+");
 
-            if (tokens.length == 0) continue;
+            if (tokens.length == 0) {
+                continue;
+            }
 
             switch (tokens[0].toLowerCase()) {
                 case "move" -> {

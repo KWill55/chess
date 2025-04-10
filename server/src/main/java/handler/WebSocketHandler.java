@@ -102,7 +102,9 @@ public class WebSocketHandler {
 
             // Load the game
             GameData game = gameDAO.getGame(gameID);
-            if (game == null) return;
+            if (game == null) {
+                return;
+            }
 
             // Remove user from white/black slot if they were a player
             String white = game.whiteUsername();
