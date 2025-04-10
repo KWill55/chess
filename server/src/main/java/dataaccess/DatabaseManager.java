@@ -9,9 +9,6 @@ public class DatabaseManager {
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
 
-    /*
-     * Load the database information for the db.properties file.
-     */
     static {
         try (var propStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("db.properties")) {
             if (propStream == null) {
@@ -31,7 +28,6 @@ public class DatabaseManager {
         }
     }
 
-    // NEW: Add a static block that creates the database and initializes the tables
     static {
         try {
             createDatabase();
@@ -41,9 +37,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Creates the database if it does not already exist.
-     */
     public static void createDatabase() throws DataAccessException {
         try {
             String statement = "CREATE DATABASE IF NOT EXISTS " + DATABASE_NAME;
@@ -56,13 +49,10 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Initializes the tables (Users, AuthTokens, Games) if they do not already exist.
-     */
     public static void initializeTables() throws DataAccessException {
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
 
-            // Create Users table
+            // Users table
             String createUsers = "CREATE TABLE IF NOT EXISTS Users (" +
                     "username VARCHAR(255) PRIMARY KEY," +
                     "password VARCHAR(255) NOT NULL," +
@@ -70,7 +60,7 @@ public class DatabaseManager {
                     ")";
             stmt.executeUpdate(createUsers);
 
-            // Create AuthTokens table with a foreign key to Users
+            // AuthTokens table
             String createAuthTokens = "CREATE TABLE IF NOT EXISTS AuthTokens (" +
                     "authToken VARCHAR(255) PRIMARY KEY," +
                     "username VARCHAR(255) NOT NULL," +
@@ -78,13 +68,14 @@ public class DatabaseManager {
                     ")";
             stmt.executeUpdate(createAuthTokens);
 
-            // Create Games table with foreign keys to Users (if applicable)
+            // Games table
             String createGames = "CREATE TABLE IF NOT EXISTS Games (" +
                     "gameID INT AUTO_INCREMENT PRIMARY KEY," +
                     "whiteUsername VARCHAR(255)," +
                     "blackUsername VARCHAR(255)," +
                     "gameName VARCHAR(255) NOT NULL," +
                     "gameState TEXT NOT NULL," +
+                    "gameOver BOOLEAN NOT NULL DEFAULT FALSE," +
                     "FOREIGN KEY (whiteUsername) REFERENCES Users(username) ON DELETE SET NULL," +
                     "FOREIGN KEY (blackUsername) REFERENCES Users(username) ON DELETE SET NULL" +
                     ")";
@@ -95,11 +86,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Creates a connection to the database and sets the catalog based upon the
-     * properties specified in db.properties.
-     * Use try-with-resources when calling this method.
-     */
     public static Connection getConnection() throws DataAccessException {
         try {
             Connection conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
