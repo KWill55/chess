@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 import ui.DrawBoard;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
 import websocket.messages.NotificationMessage;
@@ -51,8 +52,9 @@ public class WebSocketFacade extends Endpoint {
                             break;
 
                         case ERROR:
-                            System.err.println("Received error from server: " + message);
-                            break;
+                            ErrorMessage error = gson.fromJson(message.toString(), ErrorMessage.class);
+                            System.out.println(" " + error.errorMessage);
+
                     }
                 }
             });

@@ -45,66 +45,60 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
 
     @Override
     protected Object handleRequest(JoinGameRequest request, Request req, Response res) {
-        String authToken = getAuthToken(req); // Extract the authentication token
-
-        // Authenticate user
+        String authToken = getAuthToken(req);
         String username;
+
         try {
             username = authService.getUserFromAuth(authToken);
         } catch (DataAccessException e) {
             res.status(401);
             return gson.toJson(Map.of("message", "Error: Unauthorized"));
         }
+
         if (username == null) {
             res.status(401);
             return gson.toJson(Map.of("message", "Error: Unauthorized"));
         }
+
         if (request.gameID() <= 0) {
             res.status(400);
             return gson.toJson(Map.of("message", "Error: invalid game ID"));
         }
 
-        // Normalize and validate the color
         String color = request.playerColor();
         if (color != null) {
             color = color.trim().toUpperCase();
-        }
-        if (color != null && !color.equals("WHITE") && !color.equals("BLACK")) {
-            res.status(400);
-            return gson.toJson(Map.of("message", "Error: invalid player color"));
-        }
-
-        // If no color was provided, treat it as invalid (instead of observer)
-        if (color == null) {
-            res.status(400);
-            return gson.toJson(Map.of("message", "Error: invalid player color"));
+            if (!color.equals("WHITE") && !color.equals("BLACK")) {
+                res.status(400);
+                return gson.toJson(Map.of("message", "Error: invalid player color"));
+            }
         }
 
         try {
-            // Retrieve the game from the database
             GameData game = gameService.getGame(request.gameID());
             if (game == null) {
                 res.status(400);
                 return gson.toJson(Map.of("message", "Error: game not found"));
             }
 
-            // If the desired color slot is already taken, return 403
-            if ((color.equals("WHITE") && game.whiteUsername() != null) ||
-                    (color.equals("BLACK") && game.blackUsername() != null)) {
-                res.status(403);
-                return gson.toJson(Map.of("message", "Error: already taken"));
+            // Only try to join a color slot if color was specified
+            if (color != null) {
+                if ((color.equals("WHITE") && game.whiteUsername() != null) ||
+                        (color.equals("BLACK") && game.blackUsername() != null)) {
+                    res.status(403);
+                    return gson.toJson(Map.of("message", "Error: already taken"));
+                }
+
+                GameData updatedGame = new GameData(
+                        game.gameID(),
+                        color.equals("WHITE") ? username : game.whiteUsername(),
+                        color.equals("BLACK") ? username : game.blackUsername(),
+                        game.gameName(),
+                        game.game(),
+                        game.gameOver()
+                );
+                gameService.updateGame(request.gameID(), updatedGame);
             }
-
-            GameData updatedGame = new GameData(
-                    game.gameID(),
-                    color.equals("WHITE") ? username : game.whiteUsername(),
-                    color.equals("BLACK") ? username : game.blackUsername(),
-                    game.gameName(),
-                    game.game(),
-                    game.gameOver()
-            );
-
-            gameService.updateGame(request.gameID(), updatedGame);
 
             res.status(200);
             return gson.toJson(new JoinGameResponse());
@@ -114,6 +108,7 @@ public class JoinGameHandler extends BaseHandler<JoinGameRequest> {
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
+
 
 
 

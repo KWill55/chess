@@ -130,7 +130,7 @@ public class ChessClient {
             ChessPosition fromPos = parsePosition(from); // Convert from letter format to numbers
             ChessPosition toPos = parsePosition(to);
             ChessMove move = new ChessMove(fromPos, toPos, null);
-            System.out.println("Client created move: " + move);
+//            System.out.println("Client created move: " + move);
 
             UserGameCommand command = new UserGameCommand(
                     UserGameCommand.CommandType.MAKE_MOVE,
@@ -143,6 +143,25 @@ public class ChessClient {
             System.out.println("Invalid move: " + e.getMessage());
         }
     }
+
+    public void makeMove(int gameID, String from, String to, ChessPiece.PieceType promotion) {
+        try {
+            ChessPosition fromPos = parsePosition(from);
+            ChessPosition toPos = parsePosition(to);
+            ChessMove move = new ChessMove(fromPos, toPos, promotion);
+
+            UserGameCommand command = new UserGameCommand(
+                    UserGameCommand.CommandType.MAKE_MOVE,
+                    authToken,
+                    gameID,
+                    move
+            );
+            webSocket.send(command);
+        } catch (Exception e) {
+            System.out.println("Invalid move: " + e.getMessage());
+        }
+    }
+
 
 
     public void redrawBoard() {
@@ -363,7 +382,7 @@ public class ChessClient {
         int col = pos.charAt(0) - 'a' + 1; // 'a' = 1, 'b' = 2, ...
         int row = pos.charAt(1) - '0'; // '1' = 1, '2' = 2, ...
         ChessPosition cp = new ChessPosition(row, col);
-        System.out.println("Converted '" + pos + "' to ChessPosition: " + cp);
+//        System.out.println("Converted '" + pos + "' to ChessPosition: " + cp);
         return cp;
     }
 

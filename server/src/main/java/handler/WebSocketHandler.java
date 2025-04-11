@@ -68,6 +68,7 @@ public class WebSocketHandler {
 
             // Notify all other clients in this game
             String notificationText = gameData.gameName() + " - " + username + " joined the game as " + playerColor;
+            System.out.println(" >>> ");
             ServerMessage notify = new NotificationMessage(notificationText);
 
 //            System.out.println("Notification to send: " + notificationText);
@@ -134,6 +135,7 @@ public class WebSocketHandler {
 
             // Notify the other players
             ServerMessage notify = new NotificationMessage(username + " left the game.");
+            System.out.println(" >>> ");
             if (sessions != null) {
                 for (Session s : sessions) {
                     if (s.isOpen()) {
@@ -176,6 +178,7 @@ public class WebSocketHandler {
 
             // Broadcast resignation
             String msg = auth.username() + " resigned.";
+            System.out.println(" >>> ");
             broadcast(gameID, new NotificationMessage(msg));
 
             // Set game to over

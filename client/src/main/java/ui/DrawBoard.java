@@ -45,9 +45,9 @@ public class DrawBoard {
         out.print(ERASE_SCREEN);
 
         // Determine column order based on perspective.
-        char startCol = (playerColor.equals("WHITE")) ? 'a' : (char)('a' + BOARD_SIZE - 1);
-        char endCol   = (playerColor.equals("WHITE")) ? (char)('a' + BOARD_SIZE - 1) : 'a';
-        int colStep   = (playerColor.equals("WHITE")) ? 1 : -1;
+        char startCol = (playerColor.equals("BLACK")) ? (char)('a' + BOARD_SIZE - 1) : 'a';
+        char endCol   = (playerColor.equals("BLACK")) ? 'a': (char)('a' + BOARD_SIZE - 1);
+        int colStep   = (playerColor.equals("BLACK")) ? -1 : 1;
 
         // Determine row order.
         int startRow, endRow, rowStep;
@@ -62,12 +62,12 @@ public class DrawBoard {
         }
 
         // Draw column labels at the top.
+        out.println();
         out.print("   ");
         for (char c = startCol; (colStep > 0 ? c <= endCol : c >= endCol); c += colStep) {
             out.printf("  %c  ", c);
         }
         out.println();
-        out.print("\n");
 
         // Draw each row.
         for (int row = startRow; (rowStep > 0 ? row <= endRow : row >= endRow); row += rowStep) {
@@ -138,6 +138,7 @@ public class DrawBoard {
             out.printf("  %c  ", c);
         }
         out.println();
+        System.out.println(" >>> ");
         out.print(RESET);
     }
 }

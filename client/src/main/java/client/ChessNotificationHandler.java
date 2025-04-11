@@ -7,5 +7,6 @@ public class ChessNotificationHandler implements NotificationHandler {
     @Override
     public void notify(NotificationMessage notification) {
         System.out.println("NOTIFICATION: " + notification.getMessage());
+        System.out.print(">>> ");
     }
 }
