@@ -69,10 +69,22 @@ public class ChessGame {
         // Get possible moves for the piece
         Collection<ChessMove> pieceMoves = piece.pieceMoves(board, startPosition);
 
+        TeamColor pieceColor = piece.getTeamColor();
+
         //filter valid moves from pieceMoves
         for (ChessMove move : pieceMoves) {
+
+
+//            System.err.println("=== DEBUG: Evaluating move ===");
+//            System.err.println("Piece: " + piece.getPieceType() + " at " + startPosition);
+//            System.err.println("Testing move: " + move);
+//            System.err.println("TeamColor for check: " + pieceColor);
+
             //skip move if move puts currentTeamTurn king in check
-            if (doesMoveLeaveKingInCheck(move, board, currentTeamTurn)) {
+//            if (doesMoveLeaveKingInCheck(move, board, currentTeamTurn)) {
+            if (doesMoveLeaveKingInCheck(move, board, piece.getTeamColor())){
+
+//                System.err.println("!!! Move leaves king in check: " + move + " — skipping");
                 continue;
             }
             validMoves.add(move);
@@ -270,7 +282,7 @@ public class ChessGame {
 
                 // Check if any move is actually legal
                 for (ChessMove move : moves) {
-                    if (!doesMoveLeaveKingInCheck(move, board, teamColor)) {
+                    if (!doesMoveLeaveKingInCheck(move, board, piece.getTeamColor())) {
                         return false; // Found a valid move, so it's NOT stalemate
                     }
                 }
@@ -320,7 +332,10 @@ public class ChessGame {
      * @return boolean
      */
     private boolean doesMoveLeaveKingInCheck(ChessMove move, ChessBoard board, TeamColor teamColor) {
-        System.out.println("\nTesting move: " + move);
+
+//        System.err.println("\n=== DEBUG: Simulating move ===");
+//        System.err.println("Move: " + move);
+//        System.err.println("Checking if " + teamColor + " is in check after move");
 
         ChessBoard tempBoard = board.copy();
         ChessPosition position = move.getStartPosition();
@@ -331,8 +346,11 @@ public class ChessGame {
         tempBoard.addPiece(position, null); // remove old piece location
         tempBoard.addPiece(newPosition, piece); // add new piece location
 
-        System.out.println("Board after move");
-        System.out.println(teamColor + " is in check? " + isInCheck(teamColor, tempBoard));
+//        System.err.println("Board after move");
+//        System.err.println(teamColor + " is in check? " + isInCheck(teamColor, tempBoard));
+
+        boolean inCheck = isInCheck(teamColor, tempBoard);
+//        System.err.println("Result: " + (inCheck ? "IN CHECK ❌" : "safe ✅"));
 
         return isInCheck(teamColor, tempBoard);
     }

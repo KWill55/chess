@@ -125,13 +125,44 @@ public class ChessClient {
         return builder.toString();
     }
 
+//    public void makeMove(int gameID, String from, String to) {
+//        try {
+//            ChessPosition fromPos = parsePosition(from); // Convert from letter format to numbers
+//            ChessPosition toPos = parsePosition(to);
+//
+//            ChessMove move = new ChessMove(fromPos, toPos, null);
+//
+//            UserGameCommand command = new UserGameCommand(
+//                    UserGameCommand.CommandType.MAKE_MOVE,
+//                    authToken,
+//                    gameID,
+//                    move
+//            );
+//            webSocket.send(command);
+//        } catch (Exception e) {
+//            System.out.println("Invalid move: " + e.getMessage());
+//        }
+//    }
+
     public void makeMove(int gameID, String from, String to) {
         try {
-            ChessPosition fromPos = parsePosition(from); // Convert from letter format to numbers
+            ChessPosition fromPos = parsePosition(from);
             ChessPosition toPos = parsePosition(to);
-            ChessMove move = new ChessMove(fromPos, toPos, null);
-//            System.out.println("Client created move: " + move);
 
+            // Check for pawn promotion
+            ChessPiece piece = webSocket.getLatestBoard().getPiece(fromPos);
+            if (piece != null && piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                int targetRow = toPos.getRow();
+                if ((piece.getTeamColor() == ChessGame.TeamColor.WHITE && targetRow == 8) ||
+                        (piece.getTeamColor() == ChessGame.TeamColor.BLACK && targetRow == 1)) {
+                    // Call the overloaded version with promotion = QUEEN
+                    makeMove(gameID, from, to, ChessPiece.PieceType.QUEEN);
+                    return;
+                }
+            }
+
+            // Otherwise, no promotion needed
+            ChessMove move = new ChessMove(fromPos, toPos, null);
             UserGameCommand command = new UserGameCommand(
                     UserGameCommand.CommandType.MAKE_MOVE,
                     authToken,
@@ -143,6 +174,7 @@ public class ChessClient {
             System.out.println("Invalid move: " + e.getMessage());
         }
     }
+
 
     public void makeMove(int gameID, String from, String to, ChessPiece.PieceType promotion) {
         try {
@@ -158,7 +190,7 @@ public class ChessClient {
             );
             webSocket.send(command);
         } catch (Exception e) {
-            System.out.println("Invalid move: " + e.getMessage());
+            System.out.println("Uh oh: " + e.getMessage());
         }
     }
 
@@ -193,11 +225,20 @@ public class ChessClient {
         tempGame.setBoard(board);
 
         // Set the team turn based on the player's color
-        if (playerColor.equalsIgnoreCase("WHITE")) {
-            tempGame.setTeamTurn(ChessGame.TeamColor.WHITE);
-        } else {
-            tempGame.setTeamTurn(ChessGame.TeamColor.BLACK);
+//        if (playerColor.equalsIgnoreCase("WHITE")) {
+//            tempGame.setTeamTurn(ChessGame.TeamColor.WHITE);
+//        } else {
+//            tempGame.setTeamTurn(ChessGame.TeamColor.BLACK);
+//        }
+
+        ChessPiece clicked = board.getPiece(fromPos);
+        if (clicked == null) {
+            System.out.println("No piece on that square.");
+            return;
         }
+
+        tempGame.setTeamTurn(clicked.getTeamColor());
+
 
         // Get the collection of valid moves for the selected piece
         Collection<ChessMove> validMoves = tempGame.validMoves(fromPos);
